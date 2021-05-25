@@ -75,6 +75,10 @@ global_pc_kpa = [7953.79201, 4924.2357]
 ###############################################################################
 
 
+def de_kpa_a_psia(p):
+  return p * 6.89476
+
+
 def rmsep(v_calculado, v_experimental):
   """
   Metodo para calcular el rmsep
@@ -94,15 +98,15 @@ def rmsep(v_calculado, v_experimental):
 
   # Si assert evalua a falso el programa se para
   # Asegurarse que las longitudes del experimental y el observado sean iguales
-  assert len(v_observado) == len(v_experimental)
+  assert len(v_calculado) == len(v_experimental)
 
   # Encontar las cantidad de elementos
-  n = len(v_observado)
+  n = len(v_calculado)
 
   # Se inicia la suma
   s = 0
 
-  for v_obs, v_exp in zip(v_observado, v_experimental):
+  for v_obs, v_exp in zip(v_calculado, v_experimental):
     # Se saca la diferencia
     diff = v_obs - v_exp
 
@@ -177,7 +181,7 @@ def redlich_kwong_equacion_cubica(a, b, p, z):
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
   p : float
     Presión
-  z : float
+  z : float (kPa)
     Factor de compresibilidad
 
   Devuelve
@@ -186,10 +190,14 @@ def redlich_kwong_equacion_cubica(a, b, p, z):
     El resultado de la función f(Z)
   """
 
+  # Se recalcula la p como psia
+  p_psia = de_kpa_a_psia(p)
+
   # Precalcular variables para representar la ecuación como:
   # Z^3 - Z^2 + a1 * Z + a0 = f(Z)
-  a0 = -a * a / b * (b * p) * (b * p)
-  a1 = b * p * (a * a / b - b * p - 1)
+
+  a0 = -a * a / b * (b * p_psia) * (b * p_psia)
+  a1 = b * p_psia * (a * a / b - b * p_psia - 1)
   return z * z * z - z * z + a1 * z + a0
 
 
@@ -206,7 +214,7 @@ def redlich_kwong_equacion_cubica_derivada(a, b, p, z):
   b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
   p : float
-    Presión
+    Presión (kPa)
   z : float
     Factor de compresibilidad
 
@@ -215,8 +223,10 @@ def redlich_kwong_equacion_cubica_derivada(a, b, p, z):
   float
     El resultado de la función f'(Z)
   """
+  # Se recalcula la p como psia
+  p_psia = de_kpa_a_psia(p)
 
-  c = b * p * ((a * a) / b - b * p - 1)
+  c = b * p_psia * ((a * a) / b - b * p_psia - 1)
   return 3 * z * z - 2 * z + c
 
 
@@ -231,7 +241,7 @@ def redlich_kwong_resolver_equacion_cubica(a, b, p, z0=1, err=5e-10):
   b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
   p : float
-    Presión
+    Presión (kPa)
   z0 : float
     Z inicial
     Si se quiere encontrar el valor de Z liquido, Z0 tiene que ser cercano a 0
@@ -339,18 +349,21 @@ def redlich_kwong_ai(pc, tr):
   Parametros
   ----------
   pc : float
-    Presión critica
+    Presión critica (kPa)
 
   tr : float
-    Temperatura reducida 
+    Temperatura reducida  (˚K)
 
   Devuelve
   --------
   float
     Valor de Ai
   """
+ 
+  # El seader toma la Pc como psias 
+  pc_psia = de_kpa_a_psia(pc)
 
-  return np.sqrt(0.4278 / (pc * np.power(tr, 2.5)))
+  return np.sqrt(0.4278 / (pc_psia * np.power(tr, 2.5)))
 
 
 def redlich_kwong_bi(pc, tr):
@@ -360,10 +373,10 @@ def redlich_kwong_bi(pc, tr):
   Parametros
   ----------
   pc : float
-    Presión critica
+    Presión critica (kPa)
 
   tr : float
-    Temperatura reducida 
+    Temperatura reducida  (˚K)
 
   Devuelve
   --------
@@ -371,7 +384,10 @@ def redlich_kwong_bi(pc, tr):
     Valor de Ai
   """
 
-  return 0.0867 / (pc * tr)
+  # El seader toma la Pc como psias 
+  pc_psia = de_kpa_a_psia(pc)
+
+  return 0.0867 / (pc_psia * tr)
 
 
 def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
@@ -393,13 +409,16 @@ def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
   bi : float
     Valor de B para la substancia i
   p : float
-    Presión
+    Presión (kPa)
 
   Devuelve
   --------
   float
     Fugacidad de la substancia i liquida
   """
+
+  # El seader toma la p como psias 
+  p_psia = de_kpa_a_psia(p)
 
   # La funcion se va a separar para simplificarla de la siguiente manera:
   # φiL = e^[(Z - 1)Bi/B - ln(Z - BP) - A^2/B(2Ai/A - Bi/B)ln(1 + BP/Z)]
@@ -412,10 +431,10 @@ def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
 
   # Precalculando valores para simplificar
   d = (z - 1) * bi / b
-  e = -np.log(z - b * p)
+  e = -np.log(z - b * p_psia)
   f = -a * a / b
   g = 2 * ai / a - bi / b
-  h = np.log(1 + b * p / z)
+  h = np.log(1 + b * p_psia / z)
   
   return np.exp(d + e + f * g * h)
 
@@ -427,15 +446,15 @@ def redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, p, t, i):
   Parametros
   ----------
   pc : list[float]
-    Una lista con las presiónes criticas para i
+    Una lista con las presiónes criticas para i (kPa)
   tc : list[float]
-    Una lista con las temperatura criticas para i
+    Una lista con las temperatura criticas para i (˚K)
   y  : list[float]
     Una list con la composición de la mezcla
   p : float
-    La presión
+    La presión (kPa)
   t : float
-    La temperatura
+    La temperatura (˚K)
   i : int
     Indice de la substancia comenzando en 1
 
@@ -649,11 +668,11 @@ def wilson_gamma_2(x, a12, a21):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de x1 y x2
-  a12: float
+  a12 : float
     Valor de A12 de wilson
-  a21: float
+  a21 : float
     Valore de A21 de wilson
 
   Devuelve
@@ -686,9 +705,9 @@ def bublp_raoult(x, t):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de x1 y x2
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
