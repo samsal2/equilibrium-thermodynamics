@@ -75,14 +75,38 @@ global_pc_kpa = [7953.79201, 4924.2357]
 ###############################################################################
 
 
-def rmsep(v_observado, v_experimental):
+def rmsep(v_calculado, v_experimental):
+  """
+  Metodo para calcular el rmsep
+
+  Parametros
+  ----------
+  v_calculado: list[float]
+    Lista con los valores calculados
+  v_experimental: list[float]
+    Lista con los valores experimentales
+
+  Devuelve
+  --------
+  float
+    El rmsep calculado
+  """
+
+  # Si assert evalua a falso el programa se para
+  # Asegurarse que las longitudes del experimental y el observado sean iguales
   assert len(v_observado) == len(v_experimental)
 
+  # Encontar las cantidad de elementos
   n = len(v_observado)
 
+  # Se inicia la suma
   s = 0
+
   for v_obs, v_exp in zip(v_observado, v_experimental):
+    # Se saca la diferencia
     diff = v_obs - v_exp
+
+    # Se suma el cuadrado de la diferencia
     s += diff * diff
 
   return np.sqrt(s / n)
