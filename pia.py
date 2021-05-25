@@ -76,7 +76,7 @@ global_pc_kpa = [7953.79201, 4924.2357]
 
 
 def de_kpa_a_psia(p):
-  return p * 6.89476
+  return p * 0.145038
 
 
 def rmsep(v_calculado, v_experimental):
@@ -500,11 +500,11 @@ def redlich_kwong_fugacidad_metanol(y, p, t):
 
   Parametros
   ----------
-  y: list[float]
+  y : list[float]
     Lista con los valores de y1 y y2
-  p: float
+  p : float
     Presión (kPa)
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -530,11 +530,11 @@ def redlich_kwong_fugacidad_benceno(y, p, t):
 
   Parametros
   ----------
-  y: list[float]
+  y : list[float]
     Lista con los valores de y1 y y2
-  p: float
+  p : float
     Presión (kPa)
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -559,11 +559,11 @@ def redlich_kwong_phi_mayus_metanol(y, p, t):
 
   Parametros
   ----------
-  y: list[float]
+  y : list[float]
     Lista con los valores de y1 y y2
-  p: float
+  p : float
     Presión (kPa)
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -591,11 +591,11 @@ def redlich_kwong_phi_mayus_benceno(y, p, t):
 
   Parametros
   ----------
-  y: list[float]
+  y : list[float]
     Lista con los valores de y1 y y2
-  p: float
+  p : float
     Presión (kPa)
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -626,11 +626,11 @@ def wilson_gamma_1(x, a12, a21):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de x1 y x2
-  a12: float
+  a12 : float
     Valor de A12 de wilson
-  a21: float
+  a21 : float
     Valore de A21 de wilson
 
   Devuelve
@@ -741,11 +741,11 @@ def bublp_raoult_mod(x, gamma, t):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de x1 y x2
-  gamma: list[float]
+  gamma : list[float]
     Lista con los valores de gamma precalculados para la temperatura correcta
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -781,14 +781,14 @@ def gamma_phi_p(x, gamma, p_sat, phi):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de {xi...}
-  gamma: list[float]
+  gamma : list[float]
     Lista con los valores de {gamma_i...} precalculados para la 
     temperatura correcta
-  p_sat: list[float]
+  p_sat : list[float]
     Valores de {Psat_i...} precalculados para la temperatura correcta
-  phi: list[float]
+  phi : list[float]
     Valores de {φi...} precalculados para la presión y temperatura correcta
 
   Devuelve
@@ -816,16 +816,16 @@ def gamma_phi_y(x, gamma, p_sat, phi, p):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de {xi...}
-  gamma: list[float]
+  gamma : list[float]
     Lista con los valores de {gamma_i...} precalculados para la 
     temperatura correcta
-  p_sat: list[float]
+  p_sat : list[float]
     Valores de {Psat_i...} precalculados para la temperatura correcta (kPa)
-  phi: list[float]
+  phi : list[float]
     Valores de {φi...} precalculados para la presión y temperatura correcta
-  p: float
+  p : float
     Presión (kPa)
 
   Devuelve
@@ -852,13 +852,13 @@ def bublp_gamma_phi(x, gamma, t, err=5e-2):
 
   Parametros
   ----------
-  x: list[float]
+  x : list[float]
     Lista con los valores de x1 y x2
-  gamma: list[float]
+  gamma : list[float]
     Lista con los valores de gamma precalculados para la temperatura correcta
-  t: float
+  t : float
     Temperatura (˚K)
-  err: float
+  err : float
     Error porcentual permitido en el calculo de bublp
 
   Devuelve
@@ -921,7 +921,7 @@ def calcular_wilson_a12_a21_gamma_phi(t):
 
   Parametros
   ----------
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -1006,7 +1006,7 @@ def calcular_wilson_a12_a21_raoult_mod(t):
 
   Parametros
   ----------
-  t: float
+  t : float
     Temperatura (˚K)
 
   Devuelve
@@ -1085,18 +1085,18 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
 
   Parametros
   ----------
-  y_calc: list[float]
+  y_calc : list[float]
     Valores de y calculados en referencia a las x en global_x1_experimental
-  p_calc: list[float]
+  p_calc : list[float]
     Valores de presión calculados en referencia con las presiones en
     global_p_experimental (kPa)
-  x_graf: list[float]
+  x_graf : list[float]
     Lista con los valores de x para graficar
-  y_graf: list[float]
+  y_graf : list[float]
     Lista con los valores de y para graficar
-  p_graf: list[float]
+  p_graf : list[float]
     Lista con los valores de presión para graficar
-  tiutlo: str
+  tiutlo : str
     Titulo a usar en la grafica
   """
 
