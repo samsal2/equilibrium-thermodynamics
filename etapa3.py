@@ -175,6 +175,3 @@ def encontrar_x_1_con_parametros_para_delta_g(Aij, Bij, Cij, T, R):
 
 def encontrar_parametros_para_nrtl_delta_g(T_experimental, x_experimental):
   pass
-
-
-def 

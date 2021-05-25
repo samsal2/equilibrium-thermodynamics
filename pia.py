@@ -1,37 +1,41 @@
 ###############################################################################
-#  ________    ___      ________          
-# |\   __  \  |\  \    |\   __  \         
-# \ \  \|\  \ \ \  \   \ \  \|\  \        
-#  \ \   ____\ \ \  \   \ \   __  \       
-#   \ \  \___|  \ \  \   \ \  \ \  \      
-#    \ \__\      \ \__\   \ \__\ \__\     
-#     \|__|       \|__|    \|__|\|__|     
-#
-#  _________    _______       ________      _____ ______       ________     
-# |\___   ___\ |\  ___ \     |\   __  \    |\   _ \  _   \    |\   __  \    
-# \|___ \  \_| \ \   __/|    \ \  \|\  \   \ \  \\\__\ \  \   \ \  \|\  \   
-#      \ \  \   \ \  \_|/__   \ \   _  _\   \ \  \\|__| \  \   \ \  \\\  \  
-#       \ \  \   \ \  \_|\ \   \ \  \\  \|   \ \  \    \ \  \   \ \  \\\  \ 
-#        \ \__\   \ \_______\   \ \__\\ _\    \ \__\    \ \__\   \ \_______\                                                                                                                                                                                                                                                                                                                                                                                                             
-#         \|__|    \|_______|    \|__|\|__|    \|__|     \|__|    \|_______|
-# ________      _______       ___            _______       ________      
-# |\   ___ \    |\  ___ \     |\  \          |\  ___ \     |\   __  \     
-# \ \  \_|\ \   \ \   __/|    \ \  \         \ \   __/|    \ \  \|\  \    
-# \ \  \ \\ \   \ \  \_|/__   \ \  \         \ \  \_|/__   \ \  \\\  \   
-#  \ \  \_\\ \   \ \  \_|\ \   \ \  \____     \ \  \_|\ \   \ \  \\\  \  
-#   \ \_______\   \ \_______\   \ \_______\    \ \_______\   \ \_____  \ 
-#    \|_______|    \|_______|    \|_______|     \|_______|    \|___| \__\
-#
+#  ________  ___  ________                                       
+# |\   __  \|\  \|\   __  \                                      
+# \ \  \|\  \ \  \ \  \|\  \                                     
+#  \ \   ____\ \  \ \   __  \                                    
+#   \ \  \___|\ \  \ \  \ \  \                                   
+#    \ \__\    \ \__\ \__\ \__\                                  
+#     \|__|     \|__|\|__|\|__|                                  
+#                                                                
+#                                                                
+#                                                                
+#  _________  _______   ________  _____ ______   ________        
+# |\___   ___\\  ___ \ |\   __  \|\   _ \  _   \|\   __  \       
+# \|___ \  \_\ \   __/|\ \  \|\  \ \  \\\__\ \  \ \  \|\  \      
+#      \ \  \ \ \  \_|/_\ \   _  _\ \  \\|__| \  \ \  \\\  \     
+#       \ \  \ \ \  \_|\ \ \  \\  \\ \  \    \ \  \ \  \\\  \    
+#        \ \__\ \ \_______\ \__\\ _\\ \__\    \ \__\ \_______\   
+#         \|__|  \|_______|\|__|\|__|\|__|     \|__|\|_______|   
+#                                                                
+#                                                                
+#                                                                
+#  ________  _______   ___               _______   ________      
+# |\   ___ \|\  ___ \ |\  \             |\  ___ \ |\   __  \     
+# \ \  \_|\ \ \   __/|\ \  \            \ \   __/|\ \  \|\  \    
+#  \ \  \ \\ \ \  \_|/_\ \  \            \ \  \_|/_\ \  \\\  \   
+#   \ \  \_\\ \ \  \_|\ \ \  \____        \ \  \_|\ \ \  \\\  \  
+#    \ \_______\ \_______\ \_______\       \ \_______\ \_____  \ 
+#     \|_______|\|_______|\|_______|        \|_______|\|___| \__\
+#                                                           \|__|
 ###############################################################################
-# Librerias utilizadas
+# Importar librerias y metodos
 ###############################################################################
 
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from numpy.polynomial.polynomial import Polynomial
-from scipy.optimize import minimize, minimize_scalar
+from scipy.optimize import minimize
 
 
 ###############################################################################
@@ -65,11 +69,6 @@ global_p_experimentales = [29.894, 32.744, 35.358, 38.587, 40.962,
 global_t_kelvin = 45 + 273.15
 global_tc_kelvin = [239.45 + 273.15, 289.05 + 273.15]
 global_pc_kpa = [7953.79201, 4924.2357]
-global_vl_cm3_mol = [40.5, 89.4]
-global_delta_cal_cm3 = [14.510, 9.158]
-global_r_cal_molk = 1.9872
-global_n = 0.2
-
 
 ###############################################################################
 # Declaración de metodos
@@ -89,73 +88,58 @@ def rmsep(v_observado, v_experimental):
   return np.sqrt(s / n)
 
 
-def antoine_smith_presion_saturada(A, B, C, T):
+def antoine_smith_presion_saturada(a, b, c, t):
   """
   Parametros
   ----------
-  A : float
+  a : float
     Coeficiente A de la ecuación de antoine
-  B : float
+  b : float
     Coeficiente B de la ecuación de antoine
-  C : float
+  c : float
     Coeficiente C de la ecuación de antoine
-  T : float
+  t : float
     Temperatura en ˚C
 
   Devuelve
+  --------
   float
-    Presión saturada en kPa
+    presión saturada en kpa
   """
-  return np.exp(A - B / (T + C))
+  return np.exp(a - b / (t + c))
 
 
-def antoine_smith_metanol_presion_saturada(T):
+def antoine_smith_metanol_presion_saturada(t):
   """
   Parametros
   ----------
-  T : float
+  t : float
     Temperatura en ˚K
 
   Devuelve
+  --------
   float
     Presión saturada del metanol en kPa
   """
-  return antoine_smith_presion_saturada(16.5785, 3638.27, 239.500, T - 273.15)
+  return antoine_smith_presion_saturada(16.5785, 3638.27, 239.500, t - 273.15)
 
 
-def antoine_smith_benceno_presion_saturada(T):
+def antoine_smith_benceno_presion_saturada(t):
   """
   Parametros
   ----------
-  T : float
+  t : float
     Temperatura en ˚K
 
   Devuelve
+  --------
   float
     Presión saturada del benceno en kPa
   """
-  return antoine_smith_presion_saturada(13.7819, 2726.81, 217.572, T - 273.15)
+  return antoine_smith_presion_saturada(13.7819, 2726.81, 217.572, t - 273.15)
 
 
-def redlich_kwong_alpha(Tr):
-  """
-  Valor de alpha para la ecuación de Redlich-Kwong
-
-  Parametros
-  ----------
-  Tr : float
-    Temperatura reducida de la substancia
-
-  Devuelve
-  -------
-  float
-    Valor de alpha
-  """
-
-  return np.sqrt(Tr)
-
-
-def redlich_kwong_equacion_cubica(A, B, P, Z):
+def redlich_kwong_equacion_cubica(a, b, p, z):
   """
   Metodo que representa la ecuacíon 4-41 del seader
 
@@ -163,13 +147,13 @@ def redlich_kwong_equacion_cubica(A, B, P, Z):
 
   Parametros
   ----------
-  A : float
+  a : float
     Regla de mezcla A, descrita por la ecuación 4-42 del seader
-  B : float
+  b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
-  P : float
+  p : float
     Presión
-  Z : float
+  z : float
     Factor de compresibilidad
 
   Devuelve
@@ -180,26 +164,26 @@ def redlich_kwong_equacion_cubica(A, B, P, Z):
 
   # Precalcular variables para representar la ecuación como:
   # Z^3 - Z^2 + a1 * Z + a0 = f(Z)
-  a0 = -A * A / B * (B * P) * (B * P)
-  a1 = B * P * (A * A / B - B * P - 1)
-  return Z * Z * Z - Z * Z + a1 * Z + a0
+  a0 = -a * a / b * (b * p) * (b * p)
+  a1 = b * p * (a * a / b - b * p - 1)
+  return z * z * z - z * z + a1 * z + a0
 
 
-def redlich_kwong_equacion_cubica_derivada(A, B, P, Z):
+def redlich_kwong_equacion_cubica_derivada(a, b, p, z):
   """
-  Metodo que representa al derivada de la ecuación 4-41 del seader
+  metodo que representa al derivada de la ecuación 4-41 del seader
 
   f'(Z) = 3Z^2 - 2Z + BP(((A^2) / B) - BP - 1)
 
   Parametros
   ----------
-  A : float
+  a : float
     Regla de mezcla A, descrita por la ecuación 4-42 del seader
-  B : float
+  b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
-  P : float
+  p : float
     Presión
-  Z : float
+  z : float
     Factor de compresibilidad
 
   Devuelve
@@ -208,23 +192,24 @@ def redlich_kwong_equacion_cubica_derivada(A, B, P, Z):
     El resultado de la función f'(Z)
   """
 
-  C = B * P * ((A * A) / B - B * P - 1)
-  return 3 * Z * Z - 2 * Z + C
+  c = b * p * ((a * a) / b - b * p - 1)
+  return 3 * z * z - 2 * z + c
 
 
-def redlich_kwong_resolver_equacion_cubica(A, B, P, Z0=1, err=5e-10):
+def redlich_kwong_resolver_equacion_cubica(a, b, p, z0=1, err=5e-10):
   """
   Metodo para encontrar el valor de Z
 
   Parametros
   ----------
-  A : float
+  a : float
     Regla de mezcla A, descrita por la ecuación 4-42 del seader
-  B : float
+  b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
-  P : float
+  p : float
     Presión
-  Z0 : float
+  z0 : float
+    Z inicial
     Si se quiere encontrar el valor de Z liquido, Z0 tiene que ser cercano a 0
     Si se quiere encontrar el valor de Z vapor, Z0 tiene que ser cercano a 1
   err : float
@@ -236,22 +221,28 @@ def redlich_kwong_resolver_equacion_cubica(A, B, P, Z0=1, err=5e-10):
     El valor de Z encontrado
   """
 
-  Z_pasada = Z0
+  # Se copia el valor de z0 inicial a la z_pasada
+  z_pasada = z0
 
-  # Se va a utilizar newton-rapson
-  # Z_i+1 = Z_i - f(Z_i) / f'(Z_i)
-  Z_actual = Z_pasada - redlich_kwong_equacion_cubica(A, B, P, Z_pasada) /\
-      redlich_kwong_equacion_cubica_derivada(A, B, P, Z_pasada)
+  # Metodo de newton rapson
+  # z_i+1 = z_i - f(z_i) / f'(z_i)
 
-  while abs((Z_actual - Z_pasada) / Z_actual * 100) > err:
-    Z_pasada = Z_actual
-    Z_actual = Z_pasada - redlich_kwong_equacion_cubica(A, B, P, Z_pasada) /\
-        redlich_kwong_equacion_cubica_derivada(A, B, P, Z_pasada)
+  # Primera iteración de newton rapson para comenzar el ciclo
+  z_actual = z_pasada - redlich_kwong_equacion_cubica(a, b, p, z_pasada) /\
+      redlich_kwong_equacion_cubica_derivada(a, b, p, z_pasada)
 
-  return Z_actual
+  while abs((z_actual - z_pasada) / z_actual * 100) > err:
+    # Se guarda el valor de z en z_pasada
+    z_pasada = z_actual
+
+    # Se calcula la siguiente iteración de newton rapson
+    z_actual = z_pasada - redlich_kwong_equacion_cubica(a, b, p, z_pasada) /\
+        redlich_kwong_equacion_cubica_derivada(a, b, p, z_pasada)
+
+  return z_actual
 
 
-def regla_de_mezcla_A(A, y):
+def regla_de_mezcla_a(a, y):
   """
   Regla de mezclado del parametro A descrita por la ecuación 4-42 del seader
 
@@ -270,24 +261,21 @@ def regla_de_mezcla_A(A, y):
     Parametro A de la ecuación Redlich-Kwong
   """
 
-  # NOTE:
-  # si lo que evalua assert es falso el programa se para
-  # len(lista) es la longitud de la list
-
+  # Si assert evalua a falso el programa se para
   # Asegurarse que la lista de A y x tengan la misma longitud
-  assert len(A) == len(y)
+  assert len(a) == len(y)
 
-  # Valor inicial de la sumatoria
+  # valor inicial de la sumatoria
   s = 0
 
-  # Sumar los productos
-  for Ai, yi in zip(A, y):
-    s += Ai * yi
+  # sumar los productos
+  for ai, yi in zip(a, y):
+    s += ai * yi
 
   return s
 
 
-def regla_de_mezcla_B(B, y):
+def regla_de_mezcla_b(b, y):
   """
   Regla de mezclado del parametro B descrita por la ecuación 4-43 del seader
 
@@ -295,9 +283,9 @@ def regla_de_mezcla_B(B, y):
 
   Parametros
   ----------
-  B : list[float]
+  b : list[float]
     Lista con los valores de B en cada posición de i
-  xy: list[float]
+  x: list[float]
     Lista con los valores de la composición de la mezcla
 
   Devuelve
@@ -306,33 +294,30 @@ def regla_de_mezcla_B(B, y):
     Parametro B para la ec de redlich kwong del factor de compresibilidad
   """
 
-  # NOTE:
-  # si lo que evalua assert es falso el programa se para
-  # len(lista) es la longitud de la list
-
+  # Si assert evalua a falso el programa se para
   # Asegurarse que la lista de B y x tengan la misma longitud
-  assert len(B) == len(y)
+  assert len(b) == len(y)
 
-  # Valor inicial de la sumatoria
+  # valor inicial de la sumatoria
   s = 0
 
-  # Sumar los productos
-  for Bi, yi in zip(B, y):
-    s += Bi * yi
+  # sumar los productos
+  for bi, yi in zip(b, y):
+    s += bi * yi
 
   return s
 
 
-def redlich_kwong_Ai(Pc, Tr):
+def redlich_kwong_ai(pc, tr):
   """
   Valor de A para la substancia i segun la ecuación 4-44 del seader
 
   Parametros
   ----------
-  Pc : float
+  pc : float
     Presión critica
 
-  Tr : float
+  tr : float
     Temperatura reducida 
 
   Devuelve
@@ -341,19 +326,19 @@ def redlich_kwong_Ai(Pc, Tr):
     Valor de Ai
   """
 
-  return np.sqrt(0.4278 / (Pc * np.power(Tr, 2.5)))
+  return np.sqrt(0.4278 / (pc * np.power(tr, 2.5)))
 
 
-def redlich_kwong_Bi(Pc, Tr):
+def redlich_kwong_bi(pc, tr):
   """
   Valor de A para la substancia i segun la ecuación 4-44 del seader
 
   Parametros
   ----------
-  Pc : float
+  pc : float
     Presión critica
 
-  Tr : float
+  tr : float
     Temperatura reducida 
 
   Devuelve
@@ -362,28 +347,28 @@ def redlich_kwong_Bi(Pc, Tr):
     Valor de Ai
   """
 
-  return 0.0867 / (Pc * Tr)
+  return 0.0867 / (pc * tr)
 
 
-def coeficiente_de_fugacidad_para_ecuacion_cubica(Z, A, Ai, B, Bi, P):
+def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
   """
   Metodo para calcular la fugacidad descrita de la ecuación 4-72 del seader
 
-  φiL = e^[(Z - 1)Bi/B - ln(Z - BP) - A^2/B(2Ai/A - Bi/B)ln(1 + BP/Z)]
+  φi = e^[(Z - 1)Bi/B - ln(Z - BP) - A^2/B(2Ai/A - Bi/B)ln(1 + BP/Z)]
 
   Parametros
   ----------
-  Z : float
+  z : float
     Factor de compresiblidad
-  A : float
+  a : float
     Regla de mezcla A, descrita por la ecuación 4-42 del seader
-  Ai : float
+  ai : float
     Valor de A para la substancia i
-  B : float
+  b : float
     Reglas de mezcla B, descrita por la ecuaíon 4-43 del seader
-  Bi : float
+  bi : float
     Valor de B para la substancia i
-  P : float
+  p : float
     Presión
 
   Devuelve
@@ -391,39 +376,41 @@ def coeficiente_de_fugacidad_para_ecuacion_cubica(Z, A, Ai, B, Bi, P):
   float
     Fugacidad de la substancia i liquida
   """
+
+  # La funcion se va a separar para simplificarla de la siguiente manera:
   # φiL = e^[(Z - 1)Bi/B - ln(Z - BP) - A^2/B(2Ai/A - Bi/B)ln(1 + BP/Z)]
-  # a = (Z - 1)Bi/B
-  # b = -ln(Z - BP)
-  # c = -A^2/B
-  # d = 2Ai/A - Bi/B
-  # g = ln(1 + BP/Z)
-  # φiL = e^[a + b + c * d * g]
+  # d = (Z - 1)Bi/B
+  # e = -ln(Z - BP)
+  # f = -A^2/B
+  # g = 2Ai/A - Bi/B
+  # h = ln(1 + BP/Z)
+  # φiL = e^(d + e + f * g * h)
 
   # Precalculando valores para simplificar
-  a = (Z - 1) * Bi / B
-  b = -np.log(Z - B * P)
-  c = -A * A / B
-  d = 2 * Ai / A - Bi / B
-  g = np.log(1 + B * P / Z)
+  d = (z - 1) * bi / b
+  e = -np.log(z - b * p)
+  f = -a * a / b
+  g = 2 * ai / a - bi / b
+  h = np.log(1 + b * p / z)
+  
+  return np.exp(d + e + f * g * h)
 
-  return np.exp(a + b + c * d * g)
 
-
-def redlich_kwong_coeficiente_de_fugacidad_substancia_i(Pc, Tc, y, P, T, i):
+def redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, p, t, i):
   """
   Metodo para calcular la fugacidad de una substancia i en una mezcla
 
   Parametros
   ----------
-  Pc : list[float]
+  pc : list[float]
     Una lista con las presiónes criticas para i
-  Tc : list[float]
+  tc : list[float]
     Una lista con las temperatura criticas para i
   y  : list[float]
     Una list con la composición de la mezcla
-  P : float
+  p : float
     La presión
-  T : float
+  t : float
     La temperatura
   i : int
     Indice de la substancia comenzando en 1
@@ -434,122 +421,309 @@ def redlich_kwong_coeficiente_de_fugacidad_substancia_i(Pc, Tc, y, P, T, i):
     La fugacidad de la substancia i
   """
 
-  # NOTE:
-  # si lo que evalua assert es falso el programa se para
-  # len(lista) es la longitud de la list
-
+  # Si assert evalua a falso el programa se para
   # Asegurarse de que las longitudes de las listas sean las mismas
-  assert len(Tc) == len(Pc) == len(y)
+  assert len(tc) == len(pc) == len(y)
 
-  # Calcular lista de Tr
-  Tr = []
-  for Tci in Tc:
-    Tr.append(T / Tci)
+  # Calcular lista de tr
+  tr = [t / tci for tci in tc]
 
-  # Calcular lista de Ai y bi
-  lista_Ai = []
-  lista_Bi = []
-  for Pci, Tri in zip(Pc, Tr):
-    lista_Ai.append(redlich_kwong_Ai(Pci, Tri))
-    lista_Bi.append(redlich_kwong_Bi(Pci, Tri))
+  # calcular lista de Ai y Bi
+  lista_ai = []
+  lista_bi = []
+  for pci, tri in zip(pc, tr):
+    lista_ai.append(redlich_kwong_ai(pci, tri))
+    lista_bi.append(redlich_kwong_bi(pci, tri))
 
   # Calcular A y B por reglas de mezclado
-  A = regla_de_mezcla_A(lista_Ai, y)
-  B = regla_de_mezcla_B(lista_Bi, y)
+  a = regla_de_mezcla_a(lista_ai, y)
+  b = regla_de_mezcla_b(lista_bi, y)
 
-  # Calcular la Z liquida
-  Z = redlich_kwong_resolver_equacion_cubica(A, B, P)
+  # Calcular la z
+  z = redlich_kwong_resolver_equacion_cubica(a, b, p)
 
-  # Initializar el valor de A y B de la substancia i
-  # Las listas en python comienzar a contar desde 0
-  Ai = lista_Ai[i - 1]
-  Bi = lista_Bi[i - 1]
+  # Inicializar el valor de a y b de la substancia i
+  # las listas en python comienzar a contar desde 0
+  ai = lista_ai[i - 1]
+  bi = lista_bi[i - 1]
 
-  return coeficiente_de_fugacidad_para_ecuacion_cubica(Z, A, Ai, B, Bi, P)
-
-
-def redlich_kwong_fugacidad_metanol(y, P, T):
-  Pc = global_pc_kpa
-  Tc = global_tc_kelvin
-  return redlich_kwong_coeficiente_de_fugacidad_substancia_i(Pc, Tc, y, 
-                                                             P, T, 1)
+  return coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p)
 
 
-def redlich_kwong_fugacidad_benceno(y, P, T):
-  Pc = global_pc_kpa
-  Tc = global_tc_kelvin
-  return redlich_kwong_coeficiente_de_fugacidad_substancia_i(Pc, Tc, y, 
-                                                             P, T, 2)
-
-
-def redlich_kwong_phi_mayus_metanol(y, P, T):
-  phi = redlich_kwong_fugacidad_metanol(y, P, T)
-  p_sat = antoine_smith_metanol_presion_saturada(T)
-  phi_sat = redlich_kwong_fugacidad_metanol(y, p_sat, T)
-  return phi / phi_sat
-
-
-def redlich_kwong_phi_mayus_benceno(y, P, T):
-  phi = redlich_kwong_fugacidad_benceno(y, P, T)
-  p_sat = antoine_smith_benceno_presion_saturada(T)
-  phi_sat = redlich_kwong_fugacidad_benceno(y, p_sat, T)
-  return phi / phi_sat
-
-
-def wilson_gamma_1(x1, A12, A21):
+def redlich_kwong_fugacidad_metanol(y, p, t):
   """
-  Ecuación 5-28 del seader para calcular gamma 1
+  Metodo para calcular el coefficiente de fugacidad del metanol
+  en el sistema de metanol benceno
 
   Parametros
-  ---------
+  ----------
+  y: list[float]
+    Lista con los valores de y1 y y2
+  p: float
+    Presión (kPa)
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  float
+    El coeficiente de fugacidad del metanol
   """
-  x2 = 1 - x1
-  A = x1 + x2 * A12
-  B = A12 / (x1 + x2 * A12)
-  C = A21 / (x2 + x1 * A21)
-  return np.exp(-np.log(A) + x2 * (B - C))
+
+  # Se guardan los valores criticos en variables con nombres mas pequeños
+  # para su uso inmediato
+  pc = global_pc_kpa
+  tc = global_tc_kelvin
+
+  # Se calcula el coeficiente de fugacidad de 1 (el metanol)
+  return redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, 
+                                                             p, t, 1)
 
 
-def wilson_gamma_2(x2, A12, A21):
+def redlich_kwong_fugacidad_benceno(y, p, t):
   """
+  Metodo para calcular el coefficiente de fugacidad del benceno
+  en el sistema de metanol benceno
+
+  Parametros
+  ----------
+  y: list[float]
+    Lista con los valores de y1 y y2
+  p: float
+    Presión (kPa)
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  float
+    El coeficiente de fugacidad del benceno
   """
-  x1 = 1 - x2
-  A = x2 + x1 * A21
-  B = A12 / (x1 + x2 * A12)
-  C = A21 / (x2 + x1 * A21)
-  return np.exp(-np.log(A) - x1 * (B - C))
+
+  # Se guardan los valores criticos en variables con nombres mas pequeños
+  # para su uso inmediato
+  pc = global_pc_kpa
+  tc = global_tc_kelvin
+
+  # Se calcula el coeficiente de fugacidad de 2 (el benceno)
+  return redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, 
+                                                             p, t, 2)
 
 
-def vanlaar_gamma_1(x1, A12, A21):
-  x2 = 1 - x1
-  den = 1 + A12 * x1 / (A21 * x2)
-  return np.exp(A12 / (den * den))
+def redlich_kwong_phi_mayus_metanol(y, p, t):
+  """
+  Metodo para calcular phi mayus del metanol para el modelo evl gamma-phi
+
+  Parametros
+  ----------
+  y: list[float]
+    Lista con los valores de y1 y y2
+  p: float
+    Presión (kPa)
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  float
+    El coeficiente de fugacidad del benceno
+  """
+  
+  # Se calcula el coeficiente de fugacidad
+  phi = redlich_kwong_fugacidad_metanol(y, p, t)
+
+  # Se calcula la presión saturada del metanol
+  p_sat = antoine_smith_metanol_presion_saturada(t)
+
+  # Se calcula la phi saturada
+  phi_sat = redlich_kwong_fugacidad_metanol(y, p_sat, t)
+
+  # NOTA: se omitio el factor de poynting
+  return phi / phi_sat
 
 
-def vanlaar_gamma_2(x2, A12, A21):
-  x1 = 1 - x2
-  den = 1 + A21 * x2 / (A12 * x1)
-  return np.exp(A21 / (den * den))
+def redlich_kwong_phi_mayus_benceno(y, p, t):
+  """
+  Metodo para calcular phi mayus del benceno para el modelo evl gamma-phi
+
+  Parametros
+  ----------
+  y: list[float]
+    Lista con los valores de y1 y y2
+  p: float
+    Presión (kPa)
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  float
+    El coeficiente de fugacidad del benceno
+  """
+
+  # Se calcula el coeficiente de fugacidad
+  phi = redlich_kwong_fugacidad_benceno(y, p, t)
+
+  # Se calcula la presión saturada del benceno
+  p_sat = antoine_smith_benceno_presion_saturada(t)
+
+  # Se calcula la phi saturada
+  phi_sat = redlich_kwong_fugacidad_benceno(y, p_sat, t)
+
+  # NOTA: se omitio el factor de poynting
+  return phi / phi_sat
 
 
-def bublp_raoult(x, T):
+def wilson_gamma_1(x, a12, a21):
+  """
+  Ecuación 5-28 del seader para calcular la gamma 1 de wilson
+
+  gamma = e^[-ln(x1 + A12x2) 
+              + x2[A12 / (x1 + A12x2) - A21 / (x2 + A12x1)]]
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  a12: float
+    Valor de A12 de wilson
+  a21: float
+    Valore de A21 de wilson
+
+  Devuelve
+  --------
+  float
+    gamma1
+  """
+
+  # Se inicializa el valor de x1 y x2
   x1, x2 = x
-  p_sat_1 = antoine_smith_metanol_presion_saturada(T)
-  p_sat_2 = antoine_smith_benceno_presion_saturada(T)
 
+  # Se separa la ecuación de la siguiente manera
+  # gamma = e^[-ln(x1 + A12x2) 
+  #            + x2[A12 / (x1 + A12x2) - A21 / (x2 + A12x1)]]
+  # a = x1 + A12x2
+  # b = A12 / (x1 + A12x2)
+  # c = A21 / (x2 + A12x1)
+  # gamma = e^[-ln(a) + x2 * (b - c)]]
+
+  # Se precalculan los valores
+  a = x1 + x2 * a12
+  b = a12 / a
+  c = a21 / (x2 + x1 * a21)
+
+  # Se calcula la gamma
+  return np.exp(-np.log(a) + x2 * (b - c))
+
+
+def wilson_gamma_2(x, a12, a21):
+  """
+  Ecuación 5-28 del seader para calcular la gamma 2 de wilson
+
+  gamma = e^[-ln(x2 + A21x1) 
+              - x1[A12 / (x1 + A12x2) - A21 / (x2 + A12x1)]]
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  a12: float
+    Valor de A12 de wilson
+  a21: float
+    Valore de A21 de wilson
+
+  Devuelve
+  --------
+  float
+    gamma1
+  """
+  # Se inicializa el valor de x1 y x2
+  x1, x2 = x
+
+  # Se separa la ecuación de la siguiente manera
+  # gamma = e^[-ln(x2 + A12x1) 
+  #            - x1[A12 / (x1 + A12x2) - A21 / (x2 + A12x1)]]
+  # a = x2 + A12x1
+  # b = A12 / (x1 + A12x2)
+  # c = A21 / (x2 + A12x1)
+  # gamma = e^[-ln(a) - x1 * (b - c)]]
+  
+  # Se precalculan los valores
+  a = x2 + x1 * a21
+  b = a12 / (x1 + x2 * a12)
+  c = a21 / a
+  return np.exp(-np.log(a) - x1 * (b - c))
+
+
+def bublp_raoult(x, t):
+  """
+  Metodo para calcular bublp con rault para el sistema de 
+  metanol y benceno
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  -------
+  list[Union[float, list]]
+    El primer elemento de la lista es la presión, el segundo elemento es una
+    lista con los valores de y1 y y2 
+  """
+  
+  # Se inicializa x1 y x2 
+  x1, x2 = x
+
+  # Se calculan las presiones saturadas
+  p_sat_1 = antoine_smith_metanol_presion_saturada(t)
+  p_sat_2 = antoine_smith_benceno_presion_saturada(t)
+
+  # Se calcula la presión
   p = x1 * p_sat_1 + x2 * p_sat_2
+
+  # Se calculan las y
   y1 = x1 * p_sat_1 / p
   y2 = x2 * p_sat_2 / p
 
   return p, [y1, y2]
 
 
-def bublp_raoult_mod(x, gamma, T):
+def bublp_raoult_mod(x, gamma, t):
+  """
+  Metodo para calcular bublp con raoult modificado para el sistema de 
+  metanol y benceno
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  gamma: list[float]
+    Lista con los valores de gamma precalculados para la temperatura correcta
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  -------
+  list[Union[float, list]]
+    El primer elemento de la lista es la presión, el segundo elemento es una
+    lista con los valores de y1 y y2 
+  """
+  # NOTA: la razon por la que se piden las gammas precalculadas es para
+  # permitir el uso de diferentes metodos para calcularas y la
+  # facil comparacion de ambos metodos
+
+
+  # Se inicializan las x
   x1, x2 = x
+
+  # Se inicializan las gamma
   gamma1, gamma2 = gamma
 
-  p_sat_1 = antoine_smith_metanol_presion_saturada(T)
-  p_sat_2 = antoine_smith_benceno_presion_saturada(T)
+  p_sat_1 = antoine_smith_metanol_presion_saturada(t)
+  p_sat_2 = antoine_smith_benceno_presion_saturada(t)
 
   p = x1 * gamma1 * p_sat_1 + x2 * gamma2 * p_sat_2
   y1 = x1 * gamma1 * p_sat_1 / p
@@ -559,140 +733,364 @@ def bublp_raoult_mod(x, gamma, T):
 
 
 def gamma_phi_p(x, gamma, p_sat, phi):
+  """
+  Metodo para calcular la presión segun la ecuación 14.10 del smith
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de {xi...}
+  gamma: list[float]
+    Lista con los valores de {gamma_i...} precalculados para la 
+    temperatura correcta
+  p_sat: list[float]
+    Valores de {Psat_i...} precalculados para la temperatura correcta
+  phi: list[float]
+    Valores de {φi...} precalculados para la presión y temperatura correcta
+
+  Devuelve
+  --------
+  float
+    Presión (unidades de p_sat)
+  """
+  
+  # Asegurarse que las listas tengan el mismo tamaño
+  assert len(x) == len(gamma) == len(p_sat) == len(phi)
+
+  # Se inicializa la presión
   p = 0
 
+  # Se aplica la sumatoria
   for x_i, gamma_i, p_sat_i, phi_i in zip(x, gamma, p_sat, phi):
     p += x_i * gamma_i * p_sat_i / phi_i
 
   return p
 
 
-def gamma_phi_y(x, gamma, p_sat, phi, P):
+def gamma_phi_y(x, gamma, p_sat, phi, p):
+  """
+  Metodo para calcular los valores de y segun la ecuación 14.8 del smith
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de {xi...}
+  gamma: list[float]
+    Lista con los valores de {gamma_i...} precalculados para la 
+    temperatura correcta
+  p_sat: list[float]
+    Valores de {Psat_i...} precalculados para la temperatura correcta (kPa)
+  phi: list[float]
+    Valores de {φi...} precalculados para la presión y temperatura correcta
+  p: float
+    Presión (kPa)
+
+  Devuelve
+  --------
+  list[float]
+    Una lista con los valores de y
+  """
+  # Asegurarse que las listas tengan el mismo tamaño
+  assert len(x) == len(gamma) == len(p_sat) == len(phi)
+
+  # Se inicializa la lista de los valores de y
   y = []
 
   for x_i, gamma_i, p_sat_i, phi_i in zip(x, gamma, p_sat, phi):
-    y.append(x_i * gamma_i * p_sat_i / (phi_i * P))
+    y.append(x_i * gamma_i * p_sat_i / (phi_i * p))
 
   return y
 
 
-def bublp_phi_gamma(x, gamma, T, err=5e-2):
-  phi = [1.0, 1.0]
+def bublp_gamma_phi(x, gamma, t, err=5e-2):
+  """
+  Metodo para calcular bublp con gamma-phi para el sistema de 
+  metanol y benceno mostrado por el diagrama 14.1 del smith
 
-  p_sat_1 = antoine_smith_metanol_presion_saturada(T)
-  p_sat_2 = antoine_smith_benceno_presion_saturada(T)
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  gamma: list[float]
+    Lista con los valores de gamma precalculados para la temperatura correcta
+  t: float
+    Temperatura (˚K)
+  err: float
+    Error porcentual permitido en el calculo de bublp
+
+  Devuelve
+  -------
+  list[Union[float, list]]
+    El primer elemento de la lista es la presión, el segundo elemento es una
+    lista con los valores de y1 y y2 
+  """
+  
+  # Se inicializa phi
+  phi = [1.0, 1.0]
+  
+  # Se calculan las presiones saturadas
+  p_sat_1 = antoine_smith_metanol_presion_saturada(t)
+  p_sat_2 = antoine_smith_benceno_presion_saturada(t)
   p_sat = [p_sat_1, p_sat_2]
 
+  # En este punto segun el diagrama se calculan las gammas,
+  # pero el metodo ya las captura. Esta en el que llama la funcion
+  # en pasarlas a la temperatura correcta.
+  # Esto se hace para facilitar la comparacion entre diferentes metodos
+  # y para el calculo de minimos cuadrados para encontrar los coefficientes
+  # de wilson
+
   p_pasada = 0
+  
+  # Se calcula la P segun la ecuacíon 14.10 del smith
   p = gamma_phi_p(x, gamma, p_sat, phi)
 
+  # Se inicializa una lista de y afuera del scope de el loop
   y = []
 
+  # Se compara la presión pasada y actual
   while abs((p - p_pasada) / p * 100) > err:
+    # Se asigna la presión pasada para calcular la nueva
     p_pasada = p
+
+    # Se calculan los valores de y segun la ecuación 14.8 del smith
     y = gamma_phi_y(x, gamma, p_sat, phi, p)
-    phi[0] = redlich_kwong_phi_mayus_metanol(y, p, T)
-    phi[1] = redlich_kwong_phi_mayus_benceno(y, p, T)
+
+    # Se calculan las phi de metanol y benceno
+    phi[0] = redlich_kwong_phi_mayus_metanol(y, p, t)
+    phi[1] = redlich_kwong_phi_mayus_benceno(y, p, t)
+
+    # Se saca el nuevo valor de presión
     p = gamma_phi_p(x, gamma, p_sat, phi)
 
   return p, y
 
 
-def calcular_wilson_A12_A21_phi_gamma(T):
+def calcular_wilson_a12_a21_gamma_phi(t):
+  """
+  Metodo para calcular los valores de A12 y A21 de wilson utilizando
+  los valores globales experimentales y bublp de gamma phi
+
+
+  Utiliza una funcion objetivo
+  Fobj = Σ(p_experimental - p_calculada) y la funcion minimizar para 
+  encontrar A12 y A21, donde p_calculada se calcula usando bublp_gamma_phi
+
+  Parametros
+  ----------
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  list[float]
+    Una lista con los valores de A12 y A21
+  """
+  
+  # Se inicializa una lista con los valores de x1 experimentales omitiendo el
+  # primer valor de x1 y el ultimo
   x1 = global_x1_experimentales[1:-1]
+
+  # Se inicializa una lista con los valores de presión experimentales 
+  # omitiendo el primer valor de presión y el ultimo
   p = global_p_experimentales[1:-1]
 
-  def funcion_objetivo(A):
-    A12, A21 = A
+  # Se comienza la declaración de la funcion objetivo
+  def funcion_objetivo(a):
+    # Se inicializan los valores de A12 y A21 que se este probando
+    a12, a21 = a
 
+    # Se inicializa la suma
     s = 0
 
     for x1_exp, p_exp in zip(x1, p):
+      # Calcula la x2 experimental
       x2_exp = 1 - x1_exp
+      
+      # Se inicializa la lista de x1 y x2 experimentales
       x = [x1_exp, x2_exp]
+      
+      # Se calculan las gammas
+      gamma1 = wilson_gamma_1(x, a12, a21)
+      gamma2 = wilson_gamma_2(x, a12, a21)
 
-      gamma1 = wilson_gamma_1(x1_exp, A12, A21)
-      gamma2 = wilson_gamma_2(x2_exp, A12, A21)
-
+      # Se inicializa la lista de gammas calculadas
       gamma = [gamma1, gamma2]
-      p_calculada, y = bublp_phi_gamma(x, gamma, T)
 
+      # Se calcula la presión con bublp
+      p_calculada, _ = bublp_gamma_phi(x, gamma, t)
+      
+      # Se calcula la diferencia
       diff = p_exp - p_calculada
-
+      
+      # Se saca el cuadrado de la diferencia y se le agrega a la sumatoria
       s += diff * diff
 
     return s
 
-  def restringir_A12(A):
-    return A[0]
+  # Restricciones para que los valores no se alejen mucho de 0
+  # Sin estas el valor nunca converge
+  def restringir_a12(a):
+    return a[0]
 
-  def restringir_A21(A):
-    return A[1]
+  def restringir_a21(a):
+    return a[1]
+  
+  restricciones = ({"type": "ineq", "fun": restringir_a12},
+                   {"type": "ineq", "fun": restringir_a21})
 
-  restricciones = ({"type": "ineq", "fun": restringir_A12},
-                   {"type": "ineq", "fun": restringir_A21})
+  # Se minimiza la funcion objetivo y se devuelve el restulado
+  resultado =  minimize(funcion_objetivo, [0.5, 1], constraints=restricciones)
 
-  return minimize(funcion_objetivo, [0.5, 1], constraints=restricciones).x
+  # Si se encontro un resultado se devuelve
+  if resultado.success:
+    return resultado.x
+
+  # Si no se levanta una excepción
+  raise RuntimeError("calcular_wilson_a12_a21_gamma_phi: no se llego a un "
+                     "resultado")
 
 
-def calcular_wilson_A12_A21_raoult_mod(T):
+def calcular_wilson_a12_a21_raoult_mod(t):
+  """
+  Metodo para calcular los valores de A12 y A21 de wilson utilizando
+  los valores globales experimentales y bublp de raoult modificada
+
+
+  Utiliza una funcion objetivo
+  Fobj = Σ(p_experimental - p_calculada) y la funcion minimizar para 
+  encontrar A12 y A21, donde p_calculada se calcula usando bublp_raoult_mod
+
+  Parametros
+  ----------
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  list[float]
+    Una lista con los valores de A12 y A21
+  """
+  # Se inicializa una lista con los valores de x1 experimentales omitiendo el
+  # primer valor de x1 y el ultimo
   x1 = global_x1_experimentales[1:-1]
+
+  # Se inicializa una lista con los valores de presión experimentales 
+  # omitiendo el primer valor de presión y el ultimo
   p = global_p_experimentales[1:-1]
 
-  def funcion_objetivo(A):
-    A12, A21 = A
+  # Se comienza la declaración de la funcion objetivo
+  def funcion_objetivo(a):
+    # Se inicializan los valores de A12 y A21 que se este probando
+    a12, a21 = a
 
+    # Se inicializa la sumatoria
     s = 0
 
     for x1_exp, p_exp in zip(x1, p):
+      # Calcula la x2 experimental
       x2_exp = 1 - x1_exp
+      
+      # Se inicializa la lista de x1 y x2 experimentales
       x = [x1_exp, x2_exp]
 
-      gamma1 = wilson_gamma_1(x1_exp, A12, A21)
-      gamma2 = wilson_gamma_2(x2_exp, A12, A21)
+      # Se calculan las gammas
+      gamma1 = wilson_gamma_1(x, a12, a21)
+      gamma2 = wilson_gamma_2(x, a12, a21)
 
+      # Se inicializa la lista de gammas calculadas
       gamma = [gamma1, gamma2]
-      p_calculada, y = bublp_raoult_mod(x, gamma, T)
 
+      # Se calcula la presión con bublp
+      p_calculada, _ = bublp_raoult_mod(x, gamma, t)
+
+      # Se calcula la diferencia
       diff = p_exp - p_calculada
 
+      # Se saca el cuadrado de la diferencia y se le agrega a la sumatoria
       s += diff * diff
 
     return s
 
-  def restringir_A12(A):
-    return A[0]
+  # Restricciones para que los valores no se alejen mucho de 0
+  # Sin estas el valor nunca converge
+  def restringir_a12(a):
+    return a[0]
 
-  def restringir_A21(A):
-    return A[1]
+  def restringir_a21(a):
+    return a[1]
 
-  restricciones = ({"type": "ineq", "fun": restringir_A12},
-                   {"type": "ineq", "fun": restringir_A21})
+  restricciones = ({"type": "ineq", "fun": restringir_a12},
+                   {"type": "ineq", "fun": restringir_a21})
 
-  return minimize(funcion_objetivo, [0.5, 1], constraints=restricciones).x
+  # Se minimiza la funcion objetivo
+  resultado = minimize(funcion_objetivo, [0.5, 1], constraints=restricciones)
+
+  # Si se encontro un resultado se devuelve
+  if resultado.success:
+    return resultado.x
+
+  # Si no se levanta una excepción
+  raise RuntimeError("calcular_wilson_a12_a21_gamma_phi: no se llego a un "
+                     "resultado")
+
 
 
 def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
+  """
+  Metodo para mostrar los calculados (faltan energias)
+
+  Parametros
+  ----------
+  y_calc: list[float]
+    Valores de y calculados en referencia a las x en global_x1_experimental
+  p_calc: list[float]
+    Valores de presión calculados en referencia con las presiones en
+    global_p_experimental (kPa)
+  x_graf: list[float]
+    Lista con los valores de x para graficar
+  y_graf: list[float]
+    Lista con los valores de y para graficar
+  p_graf: list[float]
+    Lista con los valores de presión para graficar
+  tiutlo: str
+    Titulo a usar en la grafica
+  """
+
+  # Se calcula el rmsep
   rmsep_calculado = rmsep(p_calc, global_p_experimentales)
 
+  # Se imprime el resultado
   print(f"{titulo}: rmsep = {rmsep_calculado}")
 
+  # Se asigna el titulo a la grafica
   plt.title(titulo)
+
+  # Se grafica el punto de burbuja
   plt.plot(x_graf, p_graf, label="punto de burbuja calculado")
+
+  # Se grafica el punto de rocio
   plt.plot(y_graf, p_graf, label="punto de rocio calculado")
 
+  # Se grafica el punto de burbuja experimental
   plt.plot(global_x1_experimentales, 
            global_p_experimentales, 
            "s", 
            label="punto de burbuja experimental")
 
+  # Se grafica el punto de rocio experimental
   plt.plot(global_y1_experimentales, 
            global_p_experimentales, 
            "v", 
            label="punto de rocio experimental")
 
+  # Al eje x se le nombra x1-y1
   plt.xlabel("x1-y1")
+  
+  # Al eje y se le nombra P (kPa)
   plt.ylabel("P (kPa)")
+
+  # Se muestra la grafica
   plt.grid()
   plt.legend()
   plt.show()
@@ -702,35 +1100,47 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
 # Inicio de la ejecución del codigo
 ###############################################################################
 
+# NOTE(samuel): este codigo se repite mucho, pasarlo a una funcion que 
+# acepte la funcion bublp que se vaya a utilizar
 
-# Los puntos en x utilizados para graficar
+# Se inicalizan los puntos en x utilizados para graficar
 x_graf = np.linspace(0, 1, 128)
 
 
 # Raoult
+
+# Se inicializan las listas para los valores de y y la presión calculadas
+# en referencia a las x experimentales
 y_calc = []
 p_calc = []
 
 for x1_actual in global_x1_experimentales:
+  # Se inicializa la lista de x
   x = [x1_actual, 1 - x1_actual]
 
-  P, y = bublp_raoult(x, global_t_kelvin)
+  # Se calcula la presión y la y
+  p, y = bublp_raoult(x, global_t_kelvin)
 
-  p_calc.append(P)
+  # Se agrega la presión y la y1 a la lista
+  p_calc.append(p)
   y_calc.append(y[0])
 
-
+# Se inicializan las listas de y y presión para graficar
 y_graf = []
 p_graf = []
 
 for x1_actual in x_graf:
+  # Se inicializa la lista de x
   x = [x1_actual, 1 - x1_actual]
 
-  P, y = bublp_raoult(x, global_t_kelvin)
+  # Se calcula la presión y la y
+  p, y = bublp_raoult(x, global_t_kelvin)
 
-  p_graf.append(P)
+  # Se agrega la presión y la y1 a la lista
+  p_graf.append(p)
   y_graf.append(y[0])
 
+# Se muestran los resultados
 mostrar_datos(y_calc,
               p_calc,
               x_graf,
@@ -739,39 +1149,51 @@ mostrar_datos(y_calc,
               "raoult")
 
 # Raoult Modificada
-A12, A21 = calcular_wilson_A12_A21_raoult_mod(global_t_kelvin)
 
+# Se calculan los coeficientes de A12 y A21 para wilson
+a12, a21 = calcular_wilson_a12_a21_raoult_mod(global_t_kelvin)
+
+# Se borran los valores pasados de y y presión
 y_calc = []
 p_calc = []
 
 for x1_actual in global_x1_experimentales:
+  # Se inicializan los valores de x
   x = [x1_actual, 1 - x1_actual]
 
-  gamma1 = wilson_gamma_1(x[0], A12, A21)
-  gamma2 = wilson_gamma_2(x[1], A12, A21)
+  # Se calculan las gammas
+  gamma1 = wilson_gamma_1(x, a12, a21)
+  gamma2 = wilson_gamma_2(x, a12, a21)
   gamma = [gamma1, gamma2]
+  
+  # Se calcula la presión y las y con bublp
+  p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
 
-  P, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
-
-  p_calc.append(P)
+  # Se agregan los valores de presión y y a las listas
+  p_calc.append(p)
   y_calc.append(y[0])
 
-
+# Se borran los valores pasados de y y presión para graficar
 y_graf = []
 p_graf = []
 
 for x1_actual in x_graf:
+  # Se inicializan los valores de x
   x = [x1_actual, 1 - x1_actual]
 
-  gamma1 = wilson_gamma_1(x[0], A12, A21)
-  gamma2 = wilson_gamma_2(x[1], A12, A21)
+  # Se calculan las gammas
+  gamma1 = wilson_gamma_1(x, a12, a21)
+  gamma2 = wilson_gamma_2(x, a12, a21)
   gamma = [gamma1, gamma2]
 
-  P, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+  # Se calcula la presión y las y con bublp
+  p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
 
-  p_graf.append(P)
+  # Se agregan los valores de presión y y a las listas
+  p_graf.append(p)
   y_graf.append(y[0])
 
+# Se muestran los datos
 mostrar_datos(y_calc,
               p_calc,
               x_graf,
@@ -780,40 +1202,55 @@ mostrar_datos(y_calc,
               "raoult mod")
 
 
-# Gamma phi
-A12, A21 = calcular_wilson_A12_A21_phi_gamma(global_t_kelvin)
+# Gamma-Phi
+
+# Se calculan los coeficientes de A12 y A21 para wilson con gamma-phi
+a12, a21 = calcular_wilson_a12_a21_gamma_phi(global_t_kelvin)
 
 
+# Se borran los valores pasados de y y presión
 y_calc = []
 p_calc = []
 
 for x1_actual in global_x1_experimentales:
+  # Se inicializan los valores de x
   x = [x1_actual, 1 - x1_actual]
 
-  gamma1 = wilson_gamma_1(x[0], A12, A21)
-  gamma2 = wilson_gamma_2(x[1], A12, A21)
+  # Se calculan las gammas
+  gamma1 = wilson_gamma_1(x, a12, a21)
+  gamma2 = wilson_gamma_2(x, a12, a21)
   gamma = [gamma1, gamma2]
 
-  P, y = bublp_phi_gamma(x, gamma, global_t_kelvin)
 
-  p_calc.append(P)
+  # Se calcula la presión y las y con bublp
+  p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+
+  # Se agregan los valores de presión y y a las listas
+  p_calc.append(p)
   y_calc.append(y[0])
 
+
+# Se borran los valores pasados de y y presión para graficar
 y_graf = []
 p_graf = []
 
 for x1_actual in x_graf:
+  # Se inicializan los valores de x
   x = [x1_actual, 1 - x1_actual]
 
-  gamma1 = wilson_gamma_1(x[0], A12, A21)
-  gamma2 = wilson_gamma_2(x[1], A12, A21)
+  # Se calculan las gammas
+  gamma1 = wilson_gamma_1(x, a12, a21)
+  gamma2 = wilson_gamma_2(x, a12, a21)
   gamma = [gamma1, gamma2]
 
-  P, y = bublp_phi_gamma(x, gamma, global_t_kelvin)
+  # Se calcula la presión y las y con bublp
+  p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
 
-  p_graf.append(P)
+  # Se agregan los valores de presión y y a las listas
+  p_graf.append(p)
   y_graf.append(y[0])
 
+# Se muestan los datos
 mostrar_datos(y_calc,
               p_calc,
               x_graf,
@@ -821,5 +1258,3 @@ mostrar_datos(y_calc,
               p_graf,
               "gamma-phi")
 
-
-# %%
