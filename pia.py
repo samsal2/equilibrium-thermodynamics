@@ -69,6 +69,7 @@ global_p_experimentales = [29.894, 32.744, 35.358, 38.587, 40.962,
 global_t_kelvin = 45 + 273.15
 global_tc_kelvin = [239.45 + 273.15, 289.05 + 273.15]
 global_pc_kpa = [7953.79201, 4924.2357]
+global_cuenta_de_figuras = 1
 
 ###############################################################################
 # Declaración de metodos
@@ -1078,7 +1079,6 @@ def calcular_wilson_a12_a21_raoult_mod(t):
                      "resultado")
 
 
-
 def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
   """
   Metodo para mostrar los calculados (faltan energias)
@@ -1100,12 +1100,15 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
     Titulo a usar en la grafica
   """
 
+  global global_cuenta_de_figuras
+
   # Se calcula el rmsep
   rmsep_calculado = rmsep(p_calc, global_p_experimentales)
 
   # Se imprime el resultado
   print(f"{titulo}: rmsep = {rmsep_calculado}")
 
+  plt.figure(global_cuenta_de_figuras)
   # Se asigna el titulo a la grafica
   plt.title(titulo)
 
@@ -1136,168 +1139,177 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
   # Se muestra la grafica
   plt.grid()
   plt.legend()
-  plt.show()
+  global_cuenta_de_figuras += 1
 
+def mostrar_figuras():
+  plt.show()
 
 ###############################################################################
 # Inicio de la ejecución del codigo
 ###############################################################################
 
-# NOTE(samuel): este codigo se repite mucho, pasarlo a una funcion que 
-# acepte la funcion bublp que se vaya a utilizar
+def main():
+  # NOTE(samuel): este codigo se repite mucho, pasarlo a una funcion que 
+  # acepte la funcion bublp que se vaya a utilizar
 
-# Se inicalizan los puntos en x utilizados para graficar
-x_graf = np.linspace(0, 1, 128)
-
-
-# Raoult
-
-# Se inicializan las listas para los valores de y y la presión calculadas
-# en referencia a las x experimentales
-y_calc = []
-p_calc = []
-
-for x1_actual in global_x1_experimentales:
-  # Se inicializa la lista de x
-  x = [x1_actual, 1 - x1_actual]
-
-  # Se calcula la presión y la y
-  p, y = bublp_raoult(x, global_t_kelvin)
-
-  # Se agrega la presión y la y1 a la lista
-  p_calc.append(p)
-  y_calc.append(y[0])
-
-# Se inicializan las listas de y y presión para graficar
-y_graf = []
-p_graf = []
-
-for x1_actual in x_graf:
-  # Se inicializa la lista de x
-  x = [x1_actual, 1 - x1_actual]
-
-  # Se calcula la presión y la y
-  p, y = bublp_raoult(x, global_t_kelvin)
-
-  # Se agrega la presión y la y1 a la lista
-  p_graf.append(p)
-  y_graf.append(y[0])
-
-# Se muestran los resultados
-mostrar_datos(y_calc,
-              p_calc,
-              x_graf,
-              y_graf,
-              p_graf,
-              "raoult")
-
-# Raoult Modificada
-
-# Se calculan los coeficientes de A12 y A21 para wilson
-a12, a21 = calcular_wilson_a12_a21_raoult_mod(global_t_kelvin)
-
-# Se borran los valores pasados de y y presión
-y_calc = []
-p_calc = []
-
-for x1_actual in global_x1_experimentales:
-  # Se inicializan los valores de x
-  x = [x1_actual, 1 - x1_actual]
-
-  # Se calculan las gammas
-  gamma1 = wilson_gamma_1(x, a12, a21)
-  gamma2 = wilson_gamma_2(x, a12, a21)
-  gamma = [gamma1, gamma2]
-  
-  # Se calcula la presión y las y con bublp
-  p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
-
-  # Se agregan los valores de presión y y a las listas
-  p_calc.append(p)
-  y_calc.append(y[0])
-
-# Se borran los valores pasados de y y presión para graficar
-y_graf = []
-p_graf = []
-
-for x1_actual in x_graf:
-  # Se inicializan los valores de x
-  x = [x1_actual, 1 - x1_actual]
-
-  # Se calculan las gammas
-  gamma1 = wilson_gamma_1(x, a12, a21)
-  gamma2 = wilson_gamma_2(x, a12, a21)
-  gamma = [gamma1, gamma2]
-
-  # Se calcula la presión y las y con bublp
-  p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
-
-  # Se agregan los valores de presión y y a las listas
-  p_graf.append(p)
-  y_graf.append(y[0])
-
-# Se muestran los datos
-mostrar_datos(y_calc,
-              p_calc,
-              x_graf,
-              y_graf,
-              p_graf,
-              "raoult mod")
+  # Se inicalizan los puntos en x utilizados para graficar
+  x_graf = np.linspace(0, 1, 128)
 
 
-# Gamma-Phi
+  # Raoult
 
-# Se calculan los coeficientes de A12 y A21 para wilson con gamma-phi
-a12, a21 = calcular_wilson_a12_a21_gamma_phi(global_t_kelvin)
+  # Se inicializan las listas para los valores de y y la presión calculadas
+  # en referencia a las x experimentales
+  y_calc = []
+  p_calc = []
+
+  for x1_actual in global_x1_experimentales:
+    # Se inicializa la lista de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calcula la presión y la y
+    p, y = bublp_raoult(x, global_t_kelvin)
+
+    # Se agrega la presión y la y1 a la lista
+    p_calc.append(p)
+    y_calc.append(y[0])
+
+  # Se inicializan las listas de y y presión para graficar
+  y_graf = []
+  p_graf = []
+
+  for x1_actual in x_graf:
+    # Se inicializa la lista de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calcula la presión y la y
+    p, y = bublp_raoult(x, global_t_kelvin)
+
+    # Se agrega la presión y la y1 a la lista
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestran los resultados
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "raoult")
+
+  # Raoult Modificada
+
+  # Se calculan los coeficientes de A12 y A21 para wilson
+  a12, a21 = calcular_wilson_a12_a21_raoult_mod(global_t_kelvin)
+
+  # Se borran los valores pasados de y y presión
+  y_calc = []
+  p_calc = []
+
+  for x1_actual in global_x1_experimentales:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+    
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_calc.append(p)
+    y_calc.append(y[0])
+
+  # Se borran los valores pasados de y y presión para graficar
+  y_graf = []
+  p_graf = []
+
+  for x1_actual in x_graf:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestran los datos
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "raoult mod")
 
 
-# Se borran los valores pasados de y y presión
-y_calc = []
-p_calc = []
+  # Gamma-Phi
 
-for x1_actual in global_x1_experimentales:
-  # Se inicializan los valores de x
-  x = [x1_actual, 1 - x1_actual]
-
-  # Se calculan las gammas
-  gamma1 = wilson_gamma_1(x, a12, a21)
-  gamma2 = wilson_gamma_2(x, a12, a21)
-  gamma = [gamma1, gamma2]
+  # Se calculan los coeficientes de A12 y A21 para wilson con gamma-phi
+  a12, a21 = calcular_wilson_a12_a21_gamma_phi(global_t_kelvin)
 
 
-  # Se calcula la presión y las y con bublp
-  p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+  # Se borran los valores pasados de y y presión
+  y_calc = []
+  p_calc = []
 
-  # Se agregan los valores de presión y y a las listas
-  p_calc.append(p)
-  y_calc.append(y[0])
+  for x1_actual in global_x1_experimentales:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
 
 
-# Se borran los valores pasados de y y presión para graficar
-y_graf = []
-p_graf = []
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
 
-for x1_actual in x_graf:
-  # Se inicializan los valores de x
-  x = [x1_actual, 1 - x1_actual]
+    # Se agregan los valores de presión y y a las listas
+    p_calc.append(p)
+    y_calc.append(y[0])
 
-  # Se calculan las gammas
-  gamma1 = wilson_gamma_1(x, a12, a21)
-  gamma2 = wilson_gamma_2(x, a12, a21)
-  gamma = [gamma1, gamma2]
 
-  # Se calcula la presión y las y con bublp
-  p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+  # Se borran los valores pasados de y y presión para graficar
+  y_graf = []
+  p_graf = []
 
-  # Se agregan los valores de presión y y a las listas
-  p_graf.append(p)
-  y_graf.append(y[0])
+  for x1_actual in x_graf:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
 
-# Se muestan los datos
-mostrar_datos(y_calc,
-              p_calc,
-              x_graf,
-              y_graf,
-              p_graf,
-              "gamma-phi")
+    # Se calculan las gammas
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
 
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestan los datos
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "gamma-phi")
+
+
+  mostrar_figuras()
+
+
+if __name__ == "__main__":
+  main()
