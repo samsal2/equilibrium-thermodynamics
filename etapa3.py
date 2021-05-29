@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.optimize import fsolve
+from openpyxl import load_workbook
 
 ###############################################################################
 # Declaración de globales 
@@ -246,6 +247,7 @@ def mezcla_calcular_funciones_de_t(t):
 
 def funcion_objetivo_1(x1alfa, x1beta, t):
   tau, G = mezcla_calcular_funciones_de_t(t)
+
   alfa = nrtl_lny_sistema_binario_substancia_1([x1alfa, 1 - x1alfa], tau, G)
   beta = nrtl_lny_sistema_binario_substancia_1([x1beta, 1 - x1beta], tau, G)
 
@@ -254,6 +256,7 @@ def funcion_objetivo_1(x1alfa, x1beta, t):
 
 def funcion_objetivo_2(x1alfa, x1beta, t):
   tau, G = mezcla_calcular_funciones_de_t(t)
+
   alfa = nrtl_lny_sistema_binario_substancia_2([x1alfa, 1 - x1alfa], tau, G)
   beta = nrtl_lny_sistema_binario_substancia_2([x1beta, 1 - x1beta], tau, G)
   
@@ -262,187 +265,133 @@ def funcion_objetivo_2(x1alfa, x1beta, t):
 
 def fsolve_encontrar_x1_alfa_y_x1_beta(t):
   def funcion_objetivo(x):
-    obj1 = funcion_objetivo_1(x[0], x[1], t)
-    obj2 = funcion_objetivo_2(x[0], x[1], t)
+    x1, x2 = x
+    obj1 = funcion_objetivo_1(x1, x2, t)
+    obj2 = funcion_objetivo_2(x1, x2, t)
     return obj1, obj2
 
   return fsolve(funcion_objetivo, [0.0503, 0.8224]) 
 
 
+def fraccion_molar_local_x12(x, t):
+  tau, _ = mezcla_calcular_funciones_de_t(t)
+  tau12, tau21 = tau
+  x1, x2 = x
 
-t = np.linspace(global_tc_para_mezcla * 1.001, 300, 64)
+  num = x1 * np.exp(-global_alfa_12 * tau12)
+  den = x2 + x1 * np.exp(-global_alfa_12 * tau12)
 
-x_alfa = []
-x_beta = []
+  return den / num
 
-for t_actual in t:
+
+def fraccion_molar_local_x21(x, t):
+  tau, _ = mezcla_calcular_funciones_de_t(t)
+  tau12, tau21 = tau
+  x1, x2 = x
+
+  num = x2 * np.exp(-global_alfa_12 * tau21)
+  den = x1 + x2 * np.exp(-global_alfa_12 * tau21)
+
+  return den / num
+
+
+def energia_de_gibbs_en_exceso(x, t):
+  tau, _ = mezcla_calcular_funciones_de_t(t)
+  tau12, tau21 = tau
+
+
+  tauij = [[0, tau12], [tau12, 0]]
+  xij = [[0, fraccion_molar_local_x12(x, t)], 
+         [fraccion_molar_local_x21(x , t), 0]]
+  
+  s = 0
+
+  for i, xi in enumerate(x):
+    for j, xj in enumerate(x):
+      s += xi * xij[i][j] * tauij[i][j]
+
+  return global_r_j_molk * t * s
+  
+  
+###############################################################################
+# 
+###############################################################################
+
+# Calculo de T para graficar
+t_graf = np.linspace(global_tc_para_mezcla * 1.001, 300, 1024)
+
+# Calculo de x_graf_alfa, x_graf_beta
+x_graf_alfa = []
+x_graf_beta = []
+
+for t_actual in t_graf:
   nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
-  x_alfa.append(nueva_alfa)
-  x_beta.append(nueva_beta)
+  x_graf_alfa.append(nueva_alfa)
+  x_graf_beta.append(nueva_beta)
 
-plt.plot(x_alfa, t)
-plt.plot(x_beta, t)
-plt.plot(global_x_experimental, global_t_experimental, "s")
+# Graficando datos calculados contra experimentales
+plt.figure(1)
+plt.plot(x_graf_alfa, t_graf, label="alfa")
+plt.plot(x_graf_beta, t_graf, label="beta")
+
+# Graficando datos experimentales
+plt.plot(global_x_experimental, global_t_experimental, "s", label="experimental")
+
+
+# Calculando datos para comparar con los experimentales
+x_calc_alfa = []
+x_calc_beta = []
+
+for t_actual in global_t_experimental:
+  nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
+  x_calc_alfa.append(nueva_alfa)
+  x_calc_beta.append(nueva_beta)
+
+# Imprimiendo resultados comparando datos experimentales con calculados
+# a la consola
+
+print("+--------+------+------+------+")
+print("| T (˚K) |x exp | alfa | beta |")
+print("+--------+------+------+------+")
+for t_exp, x_exp, x_alfa, x_beta in zip(global_t_experimental, 
+                                        global_x_experimental, 
+                                        x_calc_alfa, 
+                                        x_calc_beta):
+  print("|{:.4f}|{:.4f}|{:.4f}|{:.4f}|".format(t_exp, x_exp, x_alfa, x_beta))
+  print("+--------+------+------+------+")
+
+# Guardando los datos en un archivo de excel para facil manipulación para
+# presentar
+
+wb = load_workbook(filename="etapa3_tablas.xlsx")
+hoja = wb.active
+
+hoja["A1"] = "T (˚K)"
+hoja["B1"] = "x experimental"
+hoja["C1"] = "x alfa calculada"
+hoja["D1"] = "x beta calculada"
+
+i = 2
+for t_exp, x_exp, x_alfa, x_beta in zip(global_t_experimental, 
+                                        global_x_experimental, 
+                                        x_calc_alfa, 
+                                        x_calc_beta):
+
+  hoja[f"A{i}"] = t_exp
+  hoja[f"B{i}"] = x_exp
+  hoja[f"C{i}"] = x_alfa
+  hoja[f"D{i}"] = x_beta
+  i += 1
+
+
+wb.save(filename="etapa3_tablas.xlsx")
+
+# Mostrar graficas
+plt.legend()
+plt.grid()
+plt.xlabel("x1")
+plt.ylabel("T (˚K)")
 plt.show()
 
-
-x_calc = []
-
-i = indice_del_maximo(global_t_experimental)
-
-for t_actual in global_t_experimental[:i]:
-  nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
-  x_calc.append(nueva_alfa)
-
-for t_actual in global_t_experimental[i:]:
-  nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
-  x_calc.append(nueva_beta)
-
-print(rmsep(x_calc, global_x_experimental))
-
-# De aqui para abajo es codigo en cuarantena
-"""
-def newton_rapson_f1_derivada_1_alfa(x1alfa, x1beta, t):
-  tau, G = mezcla_calcular_funciones_de_t(t)
-
-  tau12, tau21 = tau
-  g12, g21 = G
-
-  p1 = (1 - x1alfa) * (1 - x1alfa)
-  p2 = -2 * tau21 * (1 - g21) * g21 * g21
-  p3 = np.power((g21 * (1 - x1alfa) + x1alfa), 3)
-  p4 = -2 * (g12 - 1) * g12 * tau12
-  p5 = np.power((g12 * x1alfa - x1alfa + 1), 3)
-
-  p6  = -2 * (1 - x1alfa)
-  p7 = tau21 * g21 * g21
-  p8 = np.power(g21 * (1 - x1alfa) + x1alfa, 2)
-  p9 = g12 * tau12
-  p10 = np.power(g12 * x1alfa - x1alfa + 1, 2)
-  
-  return p1 * (p2 / p3 + p4 / p5) + p6 * (p7 / p8 + p9 / p10) + 1 / x1alfa
-
-
-def newton_rapson_f1_derivada_1_beta(x1alfa, x1beta, t):
-  tau, G = mezcla_calcular_funciones_de_t(t)
-
-  tau12, tau21 = tau
-  g12, g21 = G
-
-  p1 = (1 - x1beta) * (1 - x1beta)
-  p2 = -2 * tau21 * (1 - g21) * g21 * g21
-  p3 = np.power((g21 * (1 - x1beta) + x1beta), 3)
-  p4 = -2 * (g12 - 1) * g12 * tau12
-  p5 = np.power((g12 * x1beta - x1beta + 1), 3)
-
-  p6  = -2 * (1 - x1beta)
-  p7 = tau21 * g21 * g21
-  p8 = np.power(g21 * (1 - x1beta) + x1beta, 2)
-  p9 = g12 * tau12
-  p10 = np.power(g12 * x1beta - x1beta + 1, 2)
-  
-  return p1 * (p2 / p3 + p4 / p5) + p6 * (p7 / p8 + p9 / p10) - 1 / x1beta
-
-
-def newton_rapson_f2_derivada_1_alfa(x1alfa, x1beta, t):
-  tau, G = mezcla_calcular_funciones_de_t(t)
-
-  tau12, tau21 = tau
-  g12, g21 = G
-
-  p1 = x1alfa * x1alfa
-  p2 = -2 * tau12 * (g12 - 1) * g12 * g12
-  p3 = np.power((g12 * x1alfa - x1alfa + 1), 3)
-  p4 = -2 * (1 - g21) * g21 * tau21
-  p5 = np.power((g21 * (1 - x1alfa) + x1alfa), 3)
-
-  p6  = 2 * x1alfa
-  p7 = tau12 * g12 * g12
-  p8 = np.power((g12 * x1alfa - x1alfa + 1), 2)
-  p9 = g12 * tau12
-  p10 = np.power((g21 * (1 - x1alfa) + x1alfa), 2)
-  
-  return p1 * (p2 / p3 + p4 / p5) + p6 * (p7 / p8 + p9 / p10) + 1 / (1 - x1alfa)
-
-
-def newton_rapson_f2_derivada_1_beta(x1alfa, x1beta, t):
-  tau, G = mezcla_calcular_funciones_de_t(t)
-
-  tau12, tau21 = tau
-  g12, g21 = G
-
-  p1 = x1beta * x1beta
-  p2 = -2 * tau12 * (g12 - 1) * g12 * g12
-  p3 = np.power((g12 * x1beta - x1beta + 1), 3)
-  p4 = -2 * (1 - g21) * g21 * tau21
-  p5 = np.power((g21 * (1 - x1beta) + x1beta), 3)
-
-  p6  = 2 * x1beta
-  p7 = tau12 * g12 * g12
-  p8 = np.power((g12 * x1beta - x1beta + 1), 2)
-  p9 = g12 * tau12
-  p10 = np.power((g21 * (1 - x1beta) + x1beta), 2)
-  
-  return p1 * (p2 / p3 + p4 / p5) + p6 * (p7 / p8 + p9 / p10) - 1 / (1 - x1beta)
-
-
-def newton_rapson_determinante(x1alfa, x1beta, t):
-  df1dx = newton_rapson_f1_derivada_1_alfa(x1alfa, x1beta, t)
-  df1dy = newton_rapson_f1_derivada_1_beta(x1alfa, x1beta, t)
-  df2dx = newton_rapson_f2_derivada_1_alfa(x1alfa, x1beta, t)
-  df2dy = newton_rapson_f2_derivada_1_beta(x1alfa, x1beta, t)
-  return np.linalg.det([[df1dx, df2dy], [df2dx, df2dy]])
-
-
-def newton_rapson_delta_x1alfa(x1alfa, x1beta, t):
-  J = newton_rapson_determinante(x1alfa, x1beta, t)
-  df2dy = newton_rapson_f2_derivada_1_beta(x1alfa, x1beta, t)
-  df1dy = newton_rapson_f1_derivada_1_beta(x1alfa, x1beta, t)
-  a = -funcion_objetivo_1(x1alfa, x1beta, t) * df2dy
-  b = funcion_objetivo_2(x1alfa, x1beta, t) * df1dy
-  return (a + b) / J
-
-
-def newton_rapson_delta_x1beta(x1alfa, x1beta, t):
-  J = newton_rapson_determinante(x1alfa, x1beta, t)
-  df2dx = newton_rapson_f2_derivada_1_alfa(x1alfa, x1beta, t)
-  df1dx = newton_rapson_f1_derivada_1_alfa(x1alfa, x1beta, t)
-  a = -funcion_objetivo_2(x1alfa, x1beta, t) * df1dx
-  b = funcion_objetivo_1(x1alfa, x1beta, t) * df2dx
-  return (a + b) / J
-
-
-def newton_rapson_encontrar_x1_alfa_x1_beta(t):
-  x1alfa_pasado = 0
-  x1beta_pasado = 0
-  x1alfa_actual = 0.2221
-  x1beta_actual = 0.4978
-
-  def seguir(err=5e-5):
-    err_x1alfa = abs((x1alfa_actual - x1alfa_pasado) / x1alfa_actual) * 100
-    err_x1beta = abs((x1beta_actual - x1beta_pasado) / x1beta_actual) * 100
-    return err_x1alfa > err and err_x1beta > err
-
-  while seguir():
-    x1alfa_pasado = x1alfa_actual
-    x1beta_pasado = x1beta_actual
-    x1alfa_actual = x1alfa_pasado + newton_rapson_delta_x1alfa(x1alfa_pasado, x1beta_pasado, t)
-    x1beta_actual = x1beta_pasado + newton_rapson_delta_x1beta(x1alfa_pasado, x1beta_pasado, t)
-    print(x1alfa_pasado, x1beta_pasado)
-    print(x1alfa_actual, x1beta_actual)
-
-  return x1alfa_actual, x1beta_actual
-
-
-def f_obj(x):
-  alfa = newton_rapson_f1(x[0], x[1], 347.89)
-  beta = newton_rapson_f2(x[0], x[1], 347.89)
-  return alfa, beta
-
-r = fsolve(f_obj, [0.2221, 0.4978])
-
-print(r)
-print(f_obj(r))
-"""
 
 
