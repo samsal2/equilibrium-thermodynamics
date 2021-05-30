@@ -6,7 +6,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.optimize import fsolve
+from scipy.optimize import root
 from openpyxl import load_workbook
 
 ###############################################################################
@@ -32,8 +32,8 @@ global_t_experimental = [334.24,
                          349.70,
                          346.09,
                          336.01,
-                         327.71,
-                         299.71]
+                         327.71]
+                         #299.71]
 
 global_x_experimental = [0.0991, 
                          0.1669,
@@ -43,8 +43,8 @@ global_x_experimental = [0.0991,
                          0.4984,
                          0.5964,
                          0.7245,
-                         0.7640,
-                         0.8919]
+                         0.7640]
+                         #0.8919]
 # Literatura
 global_tc_para_mezcla = 349.52
 
@@ -62,37 +62,8 @@ def rmsep(v_calculado, v_experimental):
 
   return np.sqrt(s / n)
 
-def indice_del_maximo(l):
-  j = 0
-  v_max = 0
-  for i, v_actual in enumerate(l):
-    if v_actual > v_max:
-      j = i
-      v_max = v_actual
-
-  return j
-
 
 def nrtl_lny_sistema_binario_substancia_1(x, tau, g):
-  """
-  gamma 1 descrita por la ecuación 5-62 del seader
-
-  gamma1 = e^[x2^2[(t21G21^2) / (x1 + x2G21)^2 + (t12G12) / (x2 + x1G12)^2]]
-
-  Parametros
-  ----------
-  x : list[float] 
-    Lista con los valores de x1 y x2
-  t : list[float]
-    Lista con los valores de t12 y t21 de NRTL
-  g : float
-    Lista con los parametros G12 y G21 de NRTL
-
-  Devuelve
-  --------
-  float
-    gamma 1
-  """
   x1, x2 = x
   t12, t21 = tau
   g12, g21 = g 
@@ -106,22 +77,6 @@ def nrtl_lny_sistema_binario_substancia_1(x, tau, g):
 
 
 def nrtl_lny_sistema_binario_substancia_2(x, tau, g):
-  """
-  Parametros
-  ----------
-  x : list[float] 
-    Lista con los valores de x1 y x2
-  tau : list[float]
-    Lista con los valores de t12 y t21 de NRTL
-  g : float
-    Lista con los parametros G12 y G21 de NRTL
-
-  Devuelve
-  --------
-  float
-    gamma 2
-  """
-
   x1, x2 = x
   t12, t21 = tau
   g12, g21 = g 
@@ -135,87 +90,19 @@ def nrtl_lny_sistema_binario_substancia_2(x, tau, g):
 
 
 def nrtl_tau(delta_g, r, t):
-  """
-  τ_ij o τ_ji descrita por la ecuación 5-60 o 5-61 del seader
-
-  si delta_g = (g_ij - g_jj)
-  τ_ij = (g_ij - g_jj) / (RT)
-
-  si delta_g = (g_ji - g_jj)
-  τ_ji = (g_ji - g_ii) / (RT)
-
-  Parametros
-  ----------
-  delta_g : float
-    La diferencia entre g_ij - g_jj
-  r : float
-    Constante universal de los gases
-  t : float
-    Temperatura
-
-  Devuelve
-  --------
-  float
-    τ_ij
-  """
-
   return delta_g / (r * t)
 
 
 def nrtl_G(alfa_ji, tau_ji):
-  """
-  G_ij expresado por la ecuación 6-59 del seader
-
-  G_ij = e^(-α_jiτ_ji)
-
-  Parametros:
-  -----------
-  alfa_ji : float
-    α_ji
-  tau_ji : float
-    τ_ji
-
-  Devuelve:
-  ---------
-  float
-    G_ij
-  """
-
   return np.exp(-alfa_ji * tau_ji)
 
 
 def nrtl_delta_g(aij, bij, cij, t, tc):
-  """
-  Ecuación para sacar g_ij - g_jj
-
-  g_ij - g_jj = Aij + Bij(Tc - T) + Cij(Tc - T)^2
-
-  Parametros
-  ----------
-  aij : float
-    Primer coeficiente del polinomio
-  bij : float
-    Segundo coeficiente del polinomio
-  cij : float
-    Tercer coeficiente del polinomio
-  t : float
-    Temperatura
-  tc : float
-    Temperatura critica
-
-  Devuelve:
-    g_ij - g_jj
-  """
-
   t_diff = tc - t
   return aij + bij * t_diff + cij * t_diff * t_diff
 
 
 def mezcla_calcular_nrtl_delta_g_12(t):
-  """
-  t (˚K)
-  """
-
   a = global_parametro_interaccion_A12
   b = global_parametro_interaccion_B12
   c = global_parametro_interaccion_C12
@@ -224,10 +111,6 @@ def mezcla_calcular_nrtl_delta_g_12(t):
 
 
 def mezcla_calcular_nrtl_delta_g_21(t):
-  """
-  t (˚K)
-  """
-
   a = global_parametro_interaccion_A21
   b = global_parametro_interaccion_B21
   c = global_parametro_interaccion_C21
@@ -251,8 +134,8 @@ def funcion_objetivo_1(x1alfa, x1beta, t):
   alfa = nrtl_lny_sistema_binario_substancia_1([x1alfa, 1 - x1alfa], tau, G)
   beta = nrtl_lny_sistema_binario_substancia_1([x1beta, 1 - x1beta], tau, G)
 
-  return alfa - beta - np.log(x1beta/x1alfa)
-
+  return alfa - beta - np.log(x1beta / x1alfa)
+  
 
 def funcion_objetivo_2(x1alfa, x1beta, t):
   tau, G = mezcla_calcular_funciones_de_t(t)
@@ -263,89 +146,177 @@ def funcion_objetivo_2(x1alfa, x1beta, t):
   return alfa - beta - np.log((1 - x1beta) / (1 - x1alfa))
 
 
-def fsolve_encontrar_x1_alfa_y_x1_beta(t):
+# Cache del ultimo conjunto de x alfa y beta calculados
+__x_cache = [0.0991, 0.7245]
+
+
+# Reescribir el cache al default o asignar valor
+def resetear_x_cache(cache = [0.0991, 0.7245]):
+  global __x_cache
+  __x_cache = cache
+
+
+def encontrar_x1_alfa_y_x1_beta(t):
+  global __x_cache
+
   def funcion_objetivo(x):
     x1, x2 = x
     obj1 = funcion_objetivo_1(x1, x2, t)
     obj2 = funcion_objetivo_2(x1, x2, t)
     return obj1, obj2
 
-  return fsolve(funcion_objetivo, [0.0503, 0.8224]) 
-
-
-def fraccion_molar_local_x12(x, t):
-  tau, _ = mezcla_calcular_funciones_de_t(t)
-  tau12, tau21 = tau
-  x1, x2 = x
-
-  num = x1 * np.exp(-global_alfa_12 * tau12)
-  den = x2 + x1 * np.exp(-global_alfa_12 * tau12)
-
-  return den / num
-
-
-def fraccion_molar_local_x21(x, t):
-  tau, _ = mezcla_calcular_funciones_de_t(t)
-  tau12, tau21 = tau
-  x1, x2 = x
-
-  num = x2 * np.exp(-global_alfa_12 * tau21)
-  den = x1 + x2 * np.exp(-global_alfa_12 * tau21)
-
-  return den / num
-
-
-def energia_de_gibbs_en_exceso(x, t):
-  tau, _ = mezcla_calcular_funciones_de_t(t)
-  tau12, tau21 = tau
-
-
-  tauij = [[0, tau12], [tau12, 0]]
-  xij = [[0, fraccion_molar_local_x12(x, t)], 
-         [fraccion_molar_local_x21(x , t), 0]]
+  result = root(funcion_objetivo, __x_cache, method="krylov")
   
-  s = 0
+  if result.success:
+    __x_cache = result.x
+    return __x_cache
 
-  for i, xi in enumerate(x):
-    for j, xj in enumerate(x):
-      s += xi * xij[i][j] * tauij[i][j]
+  raise RuntimeError(f"__x_cache: {__x_cache}\nt: {t}")
 
-  return global_r_j_molk * t * s
+
+def nrtl_G12_derivada_inv_t(t):
+  tau, _ = mezcla_calcular_funciones_de_t(t)
+  tau12, _ = tau
+
+  aij = global_parametro_interaccion_A12
+  bij = global_parametro_interaccion_B12
+  cij = global_parametro_interaccion_C12
+
+  a = -global_alfa_12 / global_r_j_molk
+  tc = global_tc_para_mezcla
+  b = aij + bij * tc + cij * tc * tc - cij * t * t
+
+  return a * b * nrtl_G(global_alfa_12, tau12)
+
+
+def nrtl_G21_derivada_inv_t(t):
+  tau, _ = mezcla_calcular_funciones_de_t(t)
+  _, tau21 = tau
+
+  aij = global_parametro_interaccion_A21
+  bij = global_parametro_interaccion_B21
+  cij = global_parametro_interaccion_C21
+
+  a = -global_alfa_12 / global_r_j_molk
+  tc = global_tc_para_mezcla
+  b = aij + bij * tc + cij * tc * tc - cij * t * t
+
+  return a * b * nrtl_G(global_alfa_12, tau21)
+
+
+@np.vectorize
+def energia_en_exceso(x1, t):
+  x2 = 1 - x1
+  x = [x1, x2]
+
+  tau, G = mezcla_calcular_funciones_de_t(t)
+  tau12, tau21 = tau
+  G12, G21 = G
+  Gp12 = nrtl_G12_derivada_inv_t(t)
+  Gp21 = nrtl_G21_derivada_inv_t(t)
+
+  a = x1 * x2 * global_r_j_molk
+  b = (x1 * tau21 * Gp21) / ((x1 + x2 * G21) * (x1 + x2 * G21))
+  c = (x2 * tau12 * Gp12) / ((x2 + x1 * G12) * (x2 + x1 * G12))
   
-  
+  return a * (b + c)
+
+
 ###############################################################################
-# 
+# Inicio del codigo 
 ###############################################################################
+
 
 # Calculo de T para graficar
-t_graf = np.linspace(global_tc_para_mezcla * 1.001, 300, 1024)
+t_graf = np.linspace(global_tc_para_mezcla * 1.00195, 320, 128)
+
 
 # Calculo de x_graf_alfa, x_graf_beta
 x_graf_alfa = []
 x_graf_beta = []
 
+
+resetear_x_cache()
+
 for t_actual in t_graf:
-  nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
+  nueva_alfa, nueva_beta = encontrar_x1_alfa_y_x1_beta(t_actual)
   x_graf_alfa.append(nueva_alfa)
   x_graf_beta.append(nueva_beta)
 
+x_graf = list(reversed(x_graf_alfa))
+x_graf.extend(x_graf_beta)
+
+tmp_t_graf = t_graf
+t_graf = list(reversed(t_graf))
+t_graf.extend(tmp_t_graf)
+
+
 # Graficando datos calculados contra experimentales
+
 plt.figure(1)
-plt.plot(x_graf_alfa, t_graf, label="alfa")
-plt.plot(x_graf_beta, t_graf, label="beta")
+plt.plot(x_graf, t_graf, "k", label="calculado")
+
+"""
+plt.plot(x_graf_alfa, tmp_t_graf, "k", label="calculado")
+plt.plot(x_graf_beta, tmp_t_graf, "k", label="calculado")
+"""
 
 # Graficando datos experimentales
-plt.plot(global_x_experimental, global_t_experimental, "s", label="experimental")
+plt.plot(global_x_experimental, 
+         global_t_experimental, 
+         "ks", 
+         label="experimental", 
+         markerfacecolor='none')
 
+# Encontrando el punto critico
+
+t_c_graf = tmp_t_graf[0]
+x_c_graf = np.average([x_graf_alfa[0], x_graf_beta[0]])
+
+plt.plot(x_c_graf, 
+         t_c_graf, 
+         "kv", 
+         label="punto crítico", 
+         markerfacecolor='none')
+
+print(x_c_graf, t_c_graf)
+
+plt.legend()
+plt.xlabel("$x_1$")
+plt.ylabel("T (˚K)")
+plt.xlim(0, 1)
+
+# Graficando entalpia en exceso
+plt.figure(2)
+he = energia_en_exceso(x_graf, t_graf)
+he_exp = energia_en_exceso(global_x_experimental, global_t_experimental)
+
+
+plt.plot(x_graf, he, "k", label="entalpía en exceso con NRTL")
+plt.xlabel("$x_1$")
+plt.ylabel("$H^E$ (J/mol)")
+plt.xlim(0, 1)
+plt.legend()
 
 # Calculando datos para comparar con los experimentales
 x_calc_alfa = []
 x_calc_beta = []
 
 for t_actual in global_t_experimental:
-  nueva_alfa, nueva_beta = fsolve_encontrar_x1_alfa_y_x1_beta(t_actual)
+  # Para casos con poco cambio de T, resetear el cache dio mejores resultados
+  resetear_x_cache()
+  nueva_alfa, nueva_beta = encontrar_x1_alfa_y_x1_beta(t_actual)
   x_calc_alfa.append(nueva_alfa)
   x_calc_beta.append(nueva_beta)
+
+
+x_calc = []
+x_calc.extend(x_calc_alfa[:4])
+x_calc.extend(x_calc_beta[4:])
+
+he_calc = energia_en_exceso(x_calc, global_t_experimental)
+
+print(f"x1 RMSEP: {rmsep(x_calc, global_x_experimental)}")
 
 # Imprimiendo resultados comparando datos experimentales con calculados
 # a la consola
@@ -387,10 +358,6 @@ for t_exp, x_exp, x_alfa, x_beta in zip(global_t_experimental,
 wb.save(filename="etapa3_tablas.xlsx")
 
 # Mostrar graficas
-plt.legend()
-plt.grid()
-plt.xlabel("x1")
-plt.ylabel("T (˚K)")
 plt.show()
 
 
