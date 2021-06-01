@@ -1008,8 +1008,7 @@ def calcular_wilson_a12_a21_gamma_phi(t):
     return resultado.x
 
   # Si no se levanta una excepción
-  raise RuntimeError("calcular_wilson_a12_a21_gamma_phi: no se llego a un "
-                     "resultado")
+  raise RuntimeError("no se llego a un resultado")
 
 
 def calcular_wilson_a12_a21_raoult_mod(t):
@@ -1092,8 +1091,7 @@ def calcular_wilson_a12_a21_raoult_mod(t):
     return resultado.x
 
   # Si no se levanta una excepción
-  raise RuntimeError("calcular_wilson_a12_a21_gamma_phi: no se llego a un "
-                     "resultado")
+  raise RuntimeError("no se llego a un resultado")
 
 
 def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, he=None):
@@ -1176,7 +1174,7 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, he=None):
     plt.legend()
     plt.grid()
     plt.xlabel("$x_1$")
-    plt.ylabel("$H^E$")
+    plt.ylabel("$H^E (J / mol)$")
 
     # Se cambia la cuenta de figuras
     global_cuenta_de_figuras += 1
@@ -1348,10 +1346,56 @@ def wilson_entalpia_en_exceso(x, t, a12, a21):
   b = x2 * (x1 * a21 / (x2 + x1 * a21)) * l12l22
 
   return a + b
+ 
+
+def vanlaar_gamma_1(x, a21, a12):
+  """
+  Parametros
+  ----------
+  x: list[float]
+    Composición de la mezcla, valores de x1 y x2
+  a12: float
+    Valor A12 de van laar
+  a21: float
+    Valor A21 de van laar
+
+  Devuelve
+  --------
+  float
+    gamma 1 de van laar
+  """
+
+  x1, x2 = x
+
+  a = (a21 * x2 / (a12 * x1 + a21 * x2))
+
+  return np.exp(a12 * a * a)
+ 
   
-  
-  
-###############################################################################
+def vanlaar_gamma_2(x, a21, a12):
+  """
+  Parametros
+  ----------
+  x: list[float]
+    Composición de la mezcla, valores de x1 y x2
+  a12: float
+    Valor A12 de van laar
+  a21: float
+    Valor A21 de van laar
+
+  Devuelve
+  --------
+  float
+    gamma 1 de van laar
+  """
+
+  x1, x2 = x
+
+  a = (a12 * x1 / (a12 * x1 + a21 * x2))
+
+  return np.exp(a21 * a * a)
+
+
 # Inicio de la ejecución del codigo
 ###############################################################################
 
@@ -1563,6 +1607,108 @@ def main():
                 p_graf,
                 "flash")
 
+  """
+  # valores de lit para van laar
+  a12, a21 = 2.1623, 1.7925
+
+  # Se borran los valores pasados de y y presión
+  y_calc = []
+  p_calc = []
+
+  for x1_actual in global_x1_experimentales:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = vanlaar_gamma_1(x, a12, a21)
+    gamma2 = vanlaar_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_calc.append(p)
+    y_calc.append(y[0])
+
+
+  # Se borran los valores pasados de y y presión para graficar
+  y_graf = []
+  p_graf = []
+
+  for x1_actual in x_graf:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = vanlaar_gamma_1(x, a12, a21)
+    gamma2 = vanlaar_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestan los datos
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "vanlaar raoult mod")
+
+  # Se borran los valores pasados de y y presión
+  y_calc = []
+  p_calc = []
+
+  for x1_actual in global_x1_experimentales:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = vanlaar_gamma_1(x, a12, a21)
+    gamma2 = vanlaar_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_calc.append(p)
+    y_calc.append(y[0])
+
+
+  # Se borran los valores pasados de y y presión para graficar
+  y_graf = []
+  p_graf = []
+
+  for x1_actual in x_graf:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calculan las gammas
+    gamma1 = vanlaar_gamma_1(x, a12, a21)
+    gamma2 = vanlaar_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestan los datos
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "vanlaar gamma phi")
+  """
   mostrar_figuras()
 
 
