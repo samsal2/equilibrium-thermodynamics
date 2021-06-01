@@ -70,6 +70,8 @@ global_t_kelvin = 45 + 273.15
 global_tc_kelvin = [239.45 + 273.15, 289.05 + 273.15]
 global_pc_kpa = [7953.79201, 4924.2357]
 global_cuenta_de_figuras = 1
+global_vl_cm3_mol = [40.5, 89.4]
+global_r_j_molk = 8.314
 
 ###############################################################################
 # Declaración de metodos
@@ -82,7 +84,7 @@ def de_kpa_a_psia(p):
 
 def rmsep(v_calculado, v_experimental):
   """
-  Metodo para calcular el rmsep
+  Funcion para calcular el rmsep
 
   Parametros
   ----------
@@ -170,7 +172,7 @@ def antoine_smith_benceno_presion_saturada(t):
 
 def redlich_kwong_equacion_cubica(a, b, p, z):
   """
-  Metodo que representa la ecuacíon 4-41 del seader
+  Funcion que representa la ecuacíon 4-41 del seader
 
   Z^3 - Z^2 + BP(A^2/B - BP - 1)Z - A^2/B(BP)^2 = f(Z)
 
@@ -233,7 +235,7 @@ def redlich_kwong_equacion_cubica_derivada(a, b, p, z):
 
 def redlich_kwong_resolver_equacion_cubica(a, b, p, z0=1, err=5e-10):
   """
-  Metodo para encontrar el valor de Z
+  Funcion para encontrar el valor de Z
 
   Parametros
   ----------
@@ -259,7 +261,7 @@ def redlich_kwong_resolver_equacion_cubica(a, b, p, z0=1, err=5e-10):
   # Se copia el valor de z0 inicial a la z_pasada
   z_pasada = z0
 
-  # Metodo de newton rapson
+  # Funcion de newton rapson
   # z_i+1 = z_i - f(z_i) / f'(z_i)
 
   # Primera iteración de newton rapson para comenzar el ciclo
@@ -393,7 +395,7 @@ def redlich_kwong_bi(pc, tr):
 
 def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
   """
-  Metodo para calcular la fugacidad descrita de la ecuación 4-72 del seader
+  Funcion para calcular la fugacidad descrita de la ecuación 4-72 del seader
 
   φi = e^[(Z - 1)Bi/B - ln(Z - BP) - A^2/B(2Ai/A - Bi/B)ln(1 + BP/Z)]
 
@@ -442,7 +444,7 @@ def coeficiente_de_fugacidad_para_ecuacion_cubica(z, a, ai, b, bi, p):
 
 def redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, p, t, i):
   """
-  Metodo para calcular la fugacidad de una substancia i en una mezcla
+  Funcion para calcular la fugacidad de una substancia i en una mezcla
 
   Parametros
   ----------
@@ -496,7 +498,7 @@ def redlich_kwong_coeficiente_de_fugacidad_substancia_i(pc, tc, y, p, t, i):
 
 def redlich_kwong_fugacidad_metanol(y, p, t):
   """
-  Metodo para calcular el coefficiente de fugacidad del metanol
+  Funcion para calcular el coefficiente de fugacidad del metanol
   en el sistema de metanol benceno
 
   Parametros
@@ -526,7 +528,7 @@ def redlich_kwong_fugacidad_metanol(y, p, t):
 
 def redlich_kwong_fugacidad_benceno(y, p, t):
   """
-  Metodo para calcular el coefficiente de fugacidad del benceno
+  Funcion para calcular el coefficiente de fugacidad del benceno
   en el sistema de metanol benceno
 
   Parametros
@@ -556,7 +558,7 @@ def redlich_kwong_fugacidad_benceno(y, p, t):
 
 def redlich_kwong_phi_mayus_metanol(y, p, t):
   """
-  Metodo para calcular phi mayus del metanol para el modelo evl gamma-phi
+  Funcion para calcular phi mayus del metanol para el modelo evl gamma-phi
 
   Parametros
   ----------
@@ -588,7 +590,7 @@ def redlich_kwong_phi_mayus_metanol(y, p, t):
 
 def redlich_kwong_phi_mayus_benceno(y, p, t):
   """
-  Metodo para calcular phi mayus del benceno para el modelo evl gamma-phi
+  Funcion para calcular phi mayus del benceno para el modelo evl gamma-phi
 
   Parametros
   ----------
@@ -701,7 +703,7 @@ def wilson_gamma_2(x, a12, a21):
 
 def bublp_raoult(x, t):
   """
-  Metodo para calcular bublp con rault para el sistema de 
+  Funcion para calcular bublp con rault para el sistema de 
   metanol y benceno
 
   Parametros
@@ -737,7 +739,7 @@ def bublp_raoult(x, t):
 
 def bublp_raoult_mod(x, gamma, t):
   """
-  Metodo para calcular bublp con raoult modificado para el sistema de 
+  Funcion para calcular bublp con raoult modificado para el sistema de 
   metanol y benceno
 
   Parametros
@@ -778,7 +780,7 @@ def bublp_raoult_mod(x, gamma, t):
 
 def gamma_phi_p(x, gamma, p_sat, phi):
   """
-  Metodo para calcular la presión segun la ecuación 14.10 del smith
+  Funcion para calcular la presión segun la ecuación 14.10 del smith
 
   Parametros
   ----------
@@ -813,7 +815,7 @@ def gamma_phi_p(x, gamma, p_sat, phi):
 
 def gamma_phi_y(x, gamma, p_sat, phi, p):
   """
-  Metodo para calcular los valores de y segun la ecuación 14.8 del smith
+  Funcion para calcular los valores de y segun la ecuación 14.8 del smith
 
   Parametros
   ----------
@@ -848,7 +850,7 @@ def gamma_phi_y(x, gamma, p_sat, phi, p):
 
 def bublp_gamma_phi(x, gamma, t, err=5e-2):
   """
-  Metodo para calcular bublp con gamma-phi para el sistema de 
+  Funcion para calcular bublp con gamma-phi para el sistema de 
   metanol y benceno mostrado por el diagrama 14.1 del smith
 
   Parametros
@@ -912,7 +914,7 @@ def bublp_gamma_phi(x, gamma, t, err=5e-2):
 
 def calcular_wilson_a12_a21_gamma_phi(t):
   """
-  Metodo para calcular los valores de A12 y A21 de wilson utilizando
+  Funcion para calcular los valores de A12 y A21 de wilson utilizando
   los valores globales experimentales y bublp de gamma phi
 
 
@@ -997,7 +999,7 @@ def calcular_wilson_a12_a21_gamma_phi(t):
 
 def calcular_wilson_a12_a21_raoult_mod(t):
   """
-  Metodo para calcular los valores de A12 y A21 de wilson utilizando
+  Funcion para calcular los valores de A12 y A21 de wilson utilizando
   los valores globales experimentales y bublp de raoult modificada
 
 
@@ -1079,9 +1081,9 @@ def calcular_wilson_a12_a21_raoult_mod(t):
                      "resultado")
 
 
-def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
+def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, he=None):
   """
-  Metodo para mostrar los calculados (faltan energias)
+  Funcion para mostrar los calculados (faltan energias)
 
   Parametros
   ----------
@@ -1131,7 +1133,7 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
            label="punto de rocio experimental")
 
   # Al eje x se le nombra x1-y1
-  plt.xlabel("x1-y1")
+  plt.xlabel("$x_1,y_1$")
   
   # Al eje y se le nombra P (kPa)
   plt.ylabel("P (kPa)")
@@ -1139,7 +1141,30 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
   # Se muestra la grafica
   plt.grid()
   plt.legend()
+
+  # Se cambia la cuenta de figuras
   global_cuenta_de_figuras += 1
+
+  
+  # Si hay entalpias en exceso que graficar
+  if he is not None:
+    # Se crea una nueva figura
+    plt.figure(global_cuenta_de_figuras)
+
+    # Se el asigna el titulo del metodo
+    plt.title(titulo)
+
+    # Se grafica
+    plt.plot(x_graf, he, label="entalpia en exceso")
+
+    # Se muestra la grafica
+    plt.legend()
+    plt.grid()
+    plt.xlabel("$x_1$")
+    plt.ylabel("$H^E$")
+
+    # Se cambia la cuenta de figuras
+    global_cuenta_de_figuras += 1
 
 def mostrar_figuras():
   plt.show()
@@ -1147,7 +1172,7 @@ def mostrar_figuras():
 
 def flash_k(p, t):
   """
-  Function para calcular los valores de K para flash
+  Funcion para calcular los valores de K para flash
   
   Parametros
   ----------
@@ -1191,7 +1216,7 @@ def normalizar_lista(l):
 
 def bublp_flash(x, t):
   """
-  Metodo para calcular el bublp con el flash
+  Funcion para calcular el bublp con el flash
 
   Parametros
   ----------
@@ -1216,7 +1241,6 @@ def bublp_flash(x, t):
   y_actual = [0.5, 0.5]
   z = x
   p = sum([zi * p_sat_i for zi, p_sat_i in zip(z, p_sat)])
-
 
   # La función objetivo descrita por el seader 7-18
   def funcion_objetivo(z, k):
@@ -1244,7 +1268,71 @@ def bublp_flash(x, t):
     p = sum([zi * p_sat_i for zi, p_sat_i in zip(z, p_sat)])
 
   return p, y_actual
-    
+ 
+
+def wilson_lambdas(t, a12, a21):
+  """
+  Funcion para calcular las diferencias de lambdas para wilson
+  para la mezcal metanol - benceno con las ecuaciones 5-39 y 5-40 del seader
+
+  Parametros
+  ----------
+  t: float
+    Temperatura (˚K)
+  a12: float
+    Parametro A12 de wilson
+  a21: float
+    Parametro A21 de wilson
+
+  Devuelve
+  --------
+  list[float]
+    lambda12 - lambda11, lambda12 - lambda 22
+  """
+
+  v1l, v2l = global_vl_cm3_mol
+
+  # Despeje ecuación 5-39 seader
+  # lambda12 - lambda11
+  l12l11 = -np.log(a12 * v1l / v2l) * global_r_j_molk * t
+  # Despeje ecuación 5-40 seader
+  # lambda12 - lambda2
+  l12l22 = -np.log(a21 * v2l / v1l) * global_r_j_molk * t
+
+  return l12l11, l12l22
+
+
+def wilson_entalpia_en_exceso(x, t, a12, a21):
+  """
+  Funcion para calcular la entalpia en exceso con la ecuación 5-55 del seader
+
+  Parametros
+  ----------
+  x: list[float]
+    Lista con los valores de x1 y x2
+  t: float
+    Temperatura (˚K)
+  a12: float
+    Parametro A12 de wilson
+  a21: float
+    Parametro A21 de wilson
+
+  Devuelve
+  --------
+  float
+    Entalpia en exceso (J / mol)
+  """
+
+  x1, x2 = x
+  l12l11, l12l22 = wilson_lambdas(t, a12, a21)
+
+  # Ecuación 5-55
+  a = x1 * (x2 * a12 / (x1 + x2 * a12)) * l12l11
+  b = x2 * (x1 * a21 / (x2 + x1 * a21)) * l12l22
+
+  return a + b
+  
+  
   
 ###############################################################################
 # Inicio de la ejecución del codigo
@@ -1303,18 +1391,18 @@ def main():
 
   # Se calculan los coeficientes de A12 y A21 para wilson
   a12, a21 = calcular_wilson_a12_a21_raoult_mod(global_t_kelvin)
-  print(a12, a21)
 
   # Se borran los valores pasados de y y presión
   y_calc = []
   p_calc = []
+
 
   for x1_actual in global_x1_experimentales:
     # Se inicializan los valores de x
     x = [x1_actual, 1 - x1_actual]
 
     
-# Se calculan las gammas
+  # Se calculan las gammas
     gamma1 = wilson_gamma_1(x, a12, a21)
     gamma2 = wilson_gamma_2(x, a12, a21)
     gamma = [gamma1, gamma2]
@@ -1329,6 +1417,7 @@ def main():
   # Se borran los valores pasados de y y presión para graficar
   y_graf = []
   p_graf = []
+  he_graf = []
 
   for x1_actual in x_graf:
     # Se inicializan los valores de x
@@ -1341,10 +1430,12 @@ def main():
 
     # Se calcula la presión y las y con bublp
     p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
+    he = wilson_entalpia_en_exceso(x, global_t_kelvin, a12, a21)
 
     # Se agregan los valores de presión y y a las listas
     p_graf.append(p)
     y_graf.append(y[0])
+    he_graf.append(he)
 
   # Se muestran los datos
   mostrar_datos(y_calc,
@@ -1352,14 +1443,14 @@ def main():
                 x_graf,
                 y_graf,
                 p_graf,
-                "raoult mod")
+                "raoult mod",
+                he_graf)
 
 
   # Gamma-Phi
 
   # Se calculan los coeficientes de A12 y A21 para wilson con gamma-phi
   a12, a21 = calcular_wilson_a12_a21_gamma_phi(global_t_kelvin)
-  print(a12, a21)
 
 
   # Se borran los valores pasados de y y presión
@@ -1387,6 +1478,7 @@ def main():
   # Se borran los valores pasados de y y presión para graficar
   y_graf = []
   p_graf = []
+  he_graf = []
 
   for x1_actual in x_graf:
     # Se inicializan los valores de x
@@ -1399,10 +1491,12 @@ def main():
 
     # Se calcula la presión y las y con bublp
     p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
+    he = wilson_entalpia_en_exceso(x, global_t_kelvin, a12, a21)
 
     # Se agregan los valores de presión y y a las listas
     p_graf.append(p)
     y_graf.append(y[0])
+    he_graf.append(he)
 
   # Se muestan los datos
   mostrar_datos(y_calc,
@@ -1410,7 +1504,8 @@ def main():
                 x_graf,
                 y_graf,
                 p_graf,
-                "gamma-phi")
+                "gamma-phi",
+                he_graf)
 
   # Se borran los valores pasados de y y presión
   y_calc = []
