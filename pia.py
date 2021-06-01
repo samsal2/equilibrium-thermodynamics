@@ -1,4 +1,4 @@
-###############################################################################
+##############################################################################
 #  ________  ___  ________                                       
 # |\   __  \|\  \|\   __  \                                      
 # \ \  \|\  \ \  \ \  \|\  \                                     
@@ -1144,6 +1144,108 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo):
 def mostrar_figuras():
   plt.show()
 
+
+def flash_k(p, t):
+  """
+  Function para calcular los valores de K para flash
+  
+  Parametros
+  ----------
+  p: float
+    Presión (kPa)
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  --------
+  list[float]
+    Lista con los valores de K1 y K2
+  """
+
+  p_sat_1 = antoine_smith_metanol_presion_saturada(t)
+  p_sat_2 = antoine_smith_benceno_presion_saturada(t)
+  return [p_sat_1 / p, p_sat_2 / p]
+
+
+def normalizar_lista(l):
+  """
+  Funcion para normalizar una lista de numeros
+
+  Parametros
+  ----------
+  l: list[float]
+    Lista con numeros
+
+  Devuelve
+  --------
+  list[float]
+    List con los valores normalizados
+  """
+
+  # Se saca la suma
+  s = sum(l)
+    
+  # Se saca la lista con valores normalizados
+  return [v / s for v in l]
+
+
+def bublp_flash(x, t):
+  """
+  Metodo para calcular el bublp con el flash
+
+  Parametros
+  ----------
+  x: list[float]
+    List con los valores de x1 y x2
+  t: float
+    Temperatura (˚K)
+ 
+  Devuelve
+  --------
+  list[Union[float, list]]
+    Presión (kPa), [y1, y2]
+  """
+
+  # Se calculan las presiones saturadas
+  p_sat_1 = antoine_smith_metanol_presion_saturada(t)
+  p_sat_2 = antoine_smith_benceno_presion_saturada(t)
+  p_sat = [p_sat_1, p_sat_2]
+
+  # Se estiman y y P
+  y_pasadas = [0.0, 0.0]
+  y_actual = [0.5, 0.5]
+  z = x
+  p = sum([zi * p_sat_i for zi, p_sat_i in zip(z, p_sat)])
+
+
+  # La función objetivo descrita por el seader 7-18
+  def funcion_objetivo(z, k):
+    s = 0
+
+    for zi, ki in zip(z, k):
+      s += zi * ki
+
+    return 1 - s
+
+  # Lo mas cercano a un do while
+  while True:
+    # Se calculan las k
+    k = flash_k(p, t)
+
+    # Se estiman las y
+    y_actual = [zi * ki for zi, ki in zip(z, k)]
+    y_actual = normalizar_lista(y_actual) 
+    
+    # Se checa la funcion objetivo
+    if funcion_objetivo(z, k) < 1e-15 and funcion_objetivo(z, k) > -1e-15:
+      break
+  
+    # Se vuelve a estimar la presión
+    p = sum([zi * p_sat_i for zi, p_sat_i in zip(z, p_sat)])
+
+  return p, y_actual
+    
+  
 ###############################################################################
 # Inicio de la ejecución del codigo
 ###############################################################################
@@ -1201,6 +1303,7 @@ def main():
 
   # Se calculan los coeficientes de A12 y A21 para wilson
   a12, a21 = calcular_wilson_a12_a21_raoult_mod(global_t_kelvin)
+  print(a12, a21)
 
   # Se borran los valores pasados de y y presión
   y_calc = []
@@ -1210,7 +1313,8 @@ def main():
     # Se inicializan los valores de x
     x = [x1_actual, 1 - x1_actual]
 
-    # Se calculan las gammas
+    
+# Se calculan las gammas
     gamma1 = wilson_gamma_1(x, a12, a21)
     gamma2 = wilson_gamma_2(x, a12, a21)
     gamma = [gamma1, gamma2]
@@ -1255,6 +1359,7 @@ def main():
 
   # Se calculan los coeficientes de A12 y A21 para wilson con gamma-phi
   a12, a21 = calcular_wilson_a12_a21_gamma_phi(global_t_kelvin)
+  print(a12, a21)
 
 
   # Se borran los valores pasados de y y presión
@@ -1307,6 +1412,44 @@ def main():
                 p_graf,
                 "gamma-phi")
 
+  # Se borran los valores pasados de y y presión
+  y_calc = []
+  p_calc = []
+
+  for x1_actual in global_x1_experimentales:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calcula la presión y las y con bublp
+    p, y = bublp_flash(x, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_calc.append(p)
+    y_calc.append(y[0])
+
+
+  # Se borran los valores pasados de y y presión para graficar
+  y_graf = []
+  p_graf = []
+
+  for x1_actual in x_graf:
+    # Se inicializan los valores de x
+    x = [x1_actual, 1 - x1_actual]
+
+    # Se calcula la presión y las y con flash
+    p, y = bublp_flash(x, global_t_kelvin)
+
+    # Se agregan los valores de presión y y a las listas
+    p_graf.append(p)
+    y_graf.append(y[0])
+
+  # Se muestan los datos
+  mostrar_datos(y_calc,
+                p_calc,
+                x_graf,
+                y_graf,
+                p_graf,
+                "flash")
 
   mostrar_figuras()
 
