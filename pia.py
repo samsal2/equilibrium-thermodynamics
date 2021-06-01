@@ -80,7 +80,7 @@ global_r_j_molk = 8.314
 
 def de_kpa_a_psia(p):
   """
-  Funcion para converti la presión de kPa a psia
+  Funcion para convertir la presión de kPa a psia
 
   Parametros
   ----------
