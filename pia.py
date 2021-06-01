@@ -79,6 +79,21 @@ global_r_j_molk = 8.314
 
 
 def de_kpa_a_psia(p):
+  """
+  Funcion para converti la presión de kPa a psia
+
+  Parametros
+  ----------
+  p: float
+    Presión (kPa)
+
+
+  Devuelve
+  --------
+  float
+    Presión (psia)
+  """
+
   return p * 0.145038
 
 
@@ -1258,6 +1273,8 @@ def bublp_flash(x, t):
 
     # Se estiman las y
     y_actual = [zi * ki for zi, ki in zip(z, k)]
+    
+    # Se normalizan
     y_actual = normalizar_lista(y_actual) 
     
     # Se checa la funcion objetivo
