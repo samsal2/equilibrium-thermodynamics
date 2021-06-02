@@ -35,7 +35,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy.optimize import minimize
+from scipy.optimize import minimize, root_scalar
 from numpy.polynomial.polynomial import Polynomial
 
 
@@ -1762,7 +1762,82 @@ def redlich_kwong_entalpia_no_ideal_vapor(y, p, t):
 
   # Se le suma ala ideal
   return entalpia_ideal_vapor(y, t) + hr
+
+
+def wilson_gamma_phi_azeotropo(t):
+  """
+  Funcion para calcular azeotropo con gamma_phi
   
+  Parametros
+  ----------
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  list[Union[float, list]]
+    P, [x1, x2], [y1, y2]
+  """
+
+  a12, a21 = calcular_wilson_a12_a21_gamma_phi(t)
+
+  def funcion_objetivo(x1):
+    x = [x1, 1 - x1]
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+    _, y = bublp_gamma_phi(x, gamma, t)
+    return x1 - y[0]
+
+  result = root_scalar(funcion_objetivo, bracket=[0.01, 0.99])
+
+  if result.converged:
+    x1 = result.root
+    x = [x1, 1 - x1]
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+    p, y = bublp_gamma_phi(x, gamma, t)
+    return p, y, x
+
+  raise RuntimeError("no se llego a un resultado")
+
+
+def wilson_raoult_mod_azeotropo(t):
+  """
+  Funcion para calcular azeotropo con raoult modificada
+  
+  Parametros
+  ----------
+  t: float
+    Temperatura (˚K)
+
+  Devuelve
+  list[Union[float, list]]
+    P, [x1, x2], [y1, y2]
+  """
+
+  a12, a21 = calcular_wilson_a12_a21_gamma_phi(t)
+
+  def funcion_objetivo(x1):
+    x = [x1, 1 - x1]
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+    _, y = bublp_raoult_mod(x, gamma, t)
+    return x1 - y[0]
+
+  result = root_scalar(funcion_objetivo, bracket=[0.01, 0.99])
+
+  if result.converged:
+    x1 = result.root
+    x = [x1, 1 - x1]
+    gamma1 = wilson_gamma_1(x, a12, a21)
+    gamma2 = wilson_gamma_2(x, a12, a21)
+    gamma = [gamma1, gamma2]
+    p, y = bublp_raoult_mod(x, gamma, t)
+    return p, y, x
+
+  raise RuntimeError("no se llego a un resultado")
   
 ###############################################################################
 # Inicio de la ejecución del codigo
@@ -2106,6 +2181,9 @@ def main():
                 p_graf,
                 "vanlaar gamma phi")
   """
+
+  print(wilson_gamma_phi_azeotropo(global_t_kelvin))
+  print(wilson_raoult_mod_azeotropo(global_t_kelvin))
   mostrar_figuras()
 
 
