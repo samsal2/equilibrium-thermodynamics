@@ -79,14 +79,11 @@ global_r_j_molk = 8.314
 global_t_referencia_kelvin = global_t_kelvin
 
 
-global_cp_metanol_l_kj_molc = Polynomial([75.86e-3, 16.85e-5])
-
-global_cp_metanol_v_kj_molc = Polynomial([42.93e-3, 8.301e-5, 
-                                          -1.87e-8, -8.03e-12])
-
-global_cp_benceno_l_kj_molc = Polynomial([126.5e-3, 23.4e-5])
-
-global_cp_benceno_v_kj_molc = Polynomial([74.06e-3, 32.95e-5, 
+global_cp_metanol_l_kj_molk = Polynomial([75.86e-3, 16.85e-5])
+global_cp_metanol_v_kj_molk = Polynomial([42.93e-3, 8.301e-5, 
+                                          -1.87e-8, -8.03e-2])
+global_cp_benceno_l_kj_molk = Polynomial([126.5e-3, 23.4e-5])
+global_cp_benceno_v_kj_molk = Polynomial([74.06e-3, 32.95e-5, 
                                           -25.2e-8, 77.57e-12])
 
 global_hv_metanol_j_mol = 38.58 * 1000
@@ -1161,7 +1158,7 @@ def calcular_wilson_a12_a21_raoult_mod(t):
   raise RuntimeError("no se llego a un resultado")
 
 
-def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=None):
+def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, he=None):
   """
   Funcion para mostrar los calculados (faltan energias)
 
@@ -1226,7 +1223,7 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
 
   
   # Si hay entalpias en exceso que graficar
-  if hl is not None and hv is not None:
+  if he is not None:
     # Se crea una nueva figura
     plt.figure(global_cuenta_de_figuras)
 
@@ -1234,13 +1231,12 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
     plt.title(titulo)
 
     # Se grafica
-    plt.plot(x_graf, hl, label="$H_{(l)}$")
-    plt.plot(x_graf, hv, label="$H_{(v)}$")
+    plt.plot(x_graf, he, label="entalpia en exceso")
 
     # Se muestra la grafica
     plt.legend()
     plt.xlabel("$x_1$")
-    plt.ylabel("$H (J / mol)$")
+    plt.ylabel("$H^E (J / mol)$")
 
     # Se cambia la cuenta de figuras
     global_cuenta_de_figuras += 1
@@ -1478,169 +1474,50 @@ def vanlaar_gamma_2(x, a21, a12):
 
 
 def entalpia_ideal_metanol_liquido(t):
-  """
-  Funcion para calcular la entalpia ideal del metanol liquido
-  tomando como referencia estado liquido y global_t_referencia_kelvin
-  como temperatura de referencia
-
-  Parametros
-  ----------
-  t: float
-    Temperatura (˚K)
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-
-  # Se consigue la entalpia de ref en ˚C
   t1 = global_t_referencia_kelvin - 273.15
-
-
-  # Se integra el polinomio
-  entalpia_l = global_cp_metanol_l_kj_molc.integ()
-
-
-  # Se saca al entalpia en J / mol
+  entalpia_l = global_cp_metanol_l_kj_molk.integ()
   return (entalpia_l(t - 273.15) - entalpia_l(t1)) * 1000
 
 
 def entalpia_ideal_benceno_liquido(t):
-  """
-  Funcion para calcular la entalpia ideal del benceno liquido
-  tomando como referencia estado liquido y global_t_referencia_kelvin
-  como temperatura de referencia
-
-  Parametros
-  ----------
-  t: float
-    Temperatura (˚K)
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-
-  # Se consigue la entalpia de ref en ˚C
   t1 = global_t_referencia_kelvin - 273.15
-
-  # Se integra el polinomio
-  entalpia_l = global_cp_benceno_l_kj_molc.integ()
-
-  # Se saca al entalpia en J / mol
+  entalpia_l = global_cp_benceno_l_kj_molk.integ()
   return (entalpia_l(t - 273.15) - entalpia_l(t1)) * 1000
 
 
 def entalpia_ideal_metanol_ref_a_vap():
-  """
-  Funcion para calcular entalpia de Tref a estado vapor para el metanol
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-  
-  # Se guardan globales en variables mas pequeña para uso inmediato
   tb = global_tb_metanol_kelvin
   hv = global_hv_metanol_j_mol
   return entalpia_ideal_metanol_liquido(tb) + hv
 
 
 def entalpia_ideal_benceno_ref_a_vap():
-  """
-  Funcion para calcular entalpia de Tref a estado vapor para el benceno
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-
-  # Se guardan globales en variables mas pequeña para uso inmediato
   tb = global_tb_benceno_kelvin
   hv = global_hv_benceno_j_mol
   return entalpia_ideal_benceno_liquido(tb) + hv
 
 
 def entalpia_ideal_metanol_vapor(t):
-  """
-  Funcion para calcular la entalpia ideal del metanol en estado vapor a t
-
-  Parametros
-  ----------
-  t: float
-    Temperatura (˚K)
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-  # Se saca la Tb en celsius
   tb = global_tb_metanol_kelvin - 273.15
-
-  # Se integra el cp
-  entalpia_v = global_cp_metanol_v_kj_molc.integ()
-
-  # Se saca la parte del estado de referencia a vapor
+  entalpia_v = global_cp_metanol_v_kj_molk.integ()
   vap = entalpia_ideal_metanol_ref_a_vap()
   return vap + (entalpia_v(t - 273.15) - entalpia_v(tb)) * 1000
 
   
 def entalpia_ideal_benceno_vapor(t):
-  """
-  Funcion para calcular la entalpia ideal del metanol en estado vapor a t
-
-  Parametros
-  ----------
-  t: float
-    Temperatura (˚K)
-
-  Devuelve
-  ---------
-  float
-    H^id en (J / mol)
-  """
-  
-  # Se saca la Tb en celsius
   tb = global_tb_benceno_kelvin - 273.15
-
-  # Se integra el cp
-  entalpia_v = global_cp_benceno_v_kj_molc.integ()
-
-  # Se saca la parte del estado de referencia a vapor
+  entalpia_v = global_cp_benceno_v_kj_molk.integ()
   vap = entalpia_ideal_benceno_ref_a_vap()
   return vap + (entalpia_v(t - 273.15) - entalpia_v(tb)) * 1000
   
   
-def redlich_kwong_entalpia_reducida(y, p, t):
-  """
-  Funcion para calcular la entalpia reducida segun la ecuación 4-64 del seader
-
-  Parametros
-  ----------
-  y: list[float]
-    Lista con los valores de y1 y y2
-  p: float
-    Presión (kPa)
-  t: float
-    Temperatura (˚K)
-
-  Devuelve
-  ---------
-  float
-    H^R en (J / mol)
-  """
-
+def redlich_kwong_entalpia_reducida(x, p, t)
   tc = global_tc_kelvin
   pc = global_pc_kpa
 
   # Si assert evalua a falso el programa se para
   # Asegurarse de que las longitudes de las listas sean las mismas
-  assert len(tc) == len(pc) == len(y)
+  assert len(tc) == len(pc) == len(x)
 
   # Calcular lista de tr
   tr = [t / tci for tci in tc]
@@ -1653,118 +1530,16 @@ def redlich_kwong_entalpia_reducida(y, p, t):
     lista_bi.append(redlich_kwong_bi(pci, tri))
 
   # Calcular A y B por reglas de mezclado
-  a = regla_de_mezcla_a(lista_ai, y)
-  b = regla_de_mezcla_b(lista_bi, y)
+  a = regla_de_mezcla_a(lista_ai, x)
+  b = regla_de_mezcla_b(lista_bi, x)
   
-  z = redlich_kwong_calcular_compresibilidad(y, p, t)
+  z = redlich_kwong_calcular_compresibilidad(x, p, t)
   p_psia = de_kpa_a_psia(p)
 
-  rt = global_r_j_molk * t
-
-  return rt * (z - 1 - 3 * a * a / (2 * b) * np.log(1 + b * p_psia / z))
+  return 
 
 
-def entalpia_ideal_liquido(x, t):
-  """
-  Funcion para calcula la entalpia ideal liquida de la mezcla
 
-  Parametros
-  ----------
-  x : list[float]
-    Lista con los valores de x1 y x2
-  t : float
-    Temperatura (˚K)
-
-  Devuelve
-  --------
-  float
-    entalpia liquida (J / mol)
-  """
-
-  h1 = entalpia_ideal_metanol_liquido(t)
-  h2 = entalpia_ideal_benceno_liquido(t)
-  x1, x2 = x
-  return x1 * h1 + x2 * h2
-
-
-def entalpia_ideal_vapor(y, t):
-  """
-  Funcion para calcula la entalpia ideal vapor de la mezcla
-
-  Parametros
-  ----------
-  y : list[float]
-    Lista con los valores de y1 y y2
-  t : float
-    Temperatura (˚K)
-
-  Devuelve
-  --------
-  float
-    entalpia vapor (J / mol)
-  """
-
-  h1 = entalpia_ideal_metanol_vapor(t)
-  h2 = entalpia_ideal_benceno_vapor(t)
-  y1, y2 = y
-
-  return y1 * h1 + y2 * h2
-
-
-def wilson_entalpia_no_ideal_liquido(x, t, a12, a21):
-  """
-  Funcion para calcula la entalpia no ideal de un liquido con wilson
-
-  Parametros
-  ----------
-  x : list[float]
-    Lista con los valores de x1 y x2
-  t : float
-    Temperatura (˚K)
-  a12 : float
-    Valor A12 de wilson
-  a21 : float
-    Valor A21 de wilson
-
-  Devuelve
-  --------
-  float
-    entalpia liquida (J / mol)
-  """
-
-  # Se calcula la entalpai en exceso
-  he = wilson_entalpia_en_exceso(x, t, a12, a21)
-
-  # Se le agrega a la ideal
-  return entalpia_ideal_liquido(x, t) + he
-
-
-def redlich_kwong_entalpia_no_ideal_vapor(y, p, t):
-  """
-  Funcion para calcula la entalpia no ideal de un liquido con wilson
-
-  Parametros
-  ----------
-  y : list[float]
-    Lista con los valores de y1 y y2
-  p : float
-    Presión (kPa)
-  t : float
-    Temperatura (˚K)
-
-  Devuelve
-  --------
-  float
-    entalpia liquida (J / mol)
-  """
-  # Se calcula la entalpia reducida
-  hr = redlich_kwong_entalpia_reducida(y, p, t)
-
-  # Se le suma ala ideal
-  return entalpia_ideal_vapor(y, t) + hr
-  
-  
-###############################################################################
 # Inicio de la ejecución del codigo
 ###############################################################################
 
@@ -1790,14 +1565,14 @@ def main():
   # en referencia a las x experimentales
   y_calc = []
   p_calc = []
-  
+
   for x1_actual in global_x1_experimentales:
     # Se inicializa la lista de x
     x = [x1_actual, 1 - x1_actual]
 
     # Se calcula la presión y la y
     p, y = bublp_raoult(x, global_t_kelvin)
-    
+
     # Se agrega la presión y la y1 a la lista
     p_calc.append(p)
     y_calc.append(y[0])
@@ -1805,8 +1580,6 @@ def main():
   # Se inicializan las listas de y y presión para graficar
   y_graf = []
   p_graf = []
-  hl_graf = []
-  hv_graf = []
 
   for x1_actual in x_graf:
     # Se inicializa la lista de x
@@ -1814,14 +1587,10 @@ def main():
 
     # Se calcula la presión y la y
     p, y = bublp_raoult(x, global_t_kelvin)
-    hl = entalpia_ideal_liquido(x, global_t_kelvin)
-    hv = entalpia_ideal_vapor(y, global_t_kelvin)
 
     # Se agrega la presión y la y1 a la lista
     p_graf.append(p)
     y_graf.append(y[0])
-    hl_graf.append(hl)
-    hv_graf.append(hv)
 
   # Se muestran los resultados
   mostrar_datos(y_calc,
@@ -1829,9 +1598,7 @@ def main():
                 x_graf,
                 y_graf,
                 p_graf,
-                "Raoult",
-                hl_graf,
-                hv_graf)
+                "Raoult")
 
 
 
@@ -1865,8 +1632,7 @@ def main():
   # Se borran los valores pasados de y y presión para graficar
   y_graf = []
   p_graf = []
-  hl_graf = []
-  hv_graf = []
+  he_graf = []
 
   for x1_actual in x_graf:
     # Se inicializan los valores de x
@@ -1879,15 +1645,12 @@ def main():
 
     # Se calcula la presión y las y con bublp
     p, y = bublp_raoult_mod(x, gamma, global_t_kelvin)
-
-    hl = wilson_entalpia_no_ideal_liquido(x, global_t_kelvin, a12, a21)
-    hv = redlich_kwong_entalpia_no_ideal_vapor(y, p, global_t_kelvin)
+    he = wilson_entalpia_en_exceso(x, global_t_kelvin, a12, a21)
 
     # Se agregan los valores de presión y y a las listas
     p_graf.append(p)
     y_graf.append(y[0])
-    hl_graf.append(hl)
-    hv_graf.append(hv)
+    he_graf.append(he)
 
   # Se muestran los datos
   mostrar_datos(y_calc,
@@ -1896,8 +1659,7 @@ def main():
                 y_graf,
                 p_graf,
                 "Raoult Modificada",
-                hl_graf,
-                hv_graf)
+                he_graf)
 
   # Gamma-Phi
 
@@ -1930,8 +1692,7 @@ def main():
   # Se borran los valores pasados de y y presión para graficar
   y_graf = []
   p_graf = []
-  hl_graf = []
-  hv_graf = []
+  he_graf = []
 
   for x1_actual in x_graf:
     # Se inicializan los valores de x
@@ -1944,25 +1705,21 @@ def main():
 
     # Se calcula la presión y las y con bublp
     p, y = bublp_gamma_phi(x, gamma, global_t_kelvin)
-    hl = wilson_entalpia_no_ideal_liquido(x, global_t_kelvin, a12, a21)
-    hv = redlich_kwong_entalpia_no_ideal_vapor(y, p, global_t_kelvin)
+    he = wilson_entalpia_en_exceso(x, global_t_kelvin, a12, a21)
 
     # Se agregan los valores de presión y y a las listas
     p_graf.append(p)
     y_graf.append(y[0])
-    hl_graf.append(hl)
-    hv_graf.append(hv)
+    he_graf.append(he)
 
-  # Se muestran los datos
+  # Se muestan los datos
   mostrar_datos(y_calc,
                 p_calc,
                 x_graf,
                 y_graf,
                 p_graf,
                 "Gamma-Phi",
-                hl_graf,
-                hv_graf)
-
+                he_graf)
 
   # Se borran los valores pasados de y y presión
   y_calc = []
