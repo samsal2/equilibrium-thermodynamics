@@ -76,7 +76,7 @@ global_vl_cm3_mol = [40.5, 89.4]
 global_r_j_molk = 8.314
 
 # Las referencias son las substancias liquidas
-global_t_referencia_kelvin = global_t_kelvin
+global_t_referencia_kelvin = 45 + 273.15
 
 
 global_cp_metanol_l_kj_molc = Polynomial([75.86e-3, 16.85e-5])
@@ -1246,8 +1246,8 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
     global_cuenta_de_figuras += 1
 
     plt.figure(global_numero_figura_general + 1)
-    plt.plot(x_graf, hl, "-" + marcador, label=titulo+ " $H_{(l)}$")
-    plt.plot(x_graf, hv, "-" + marcador, label=titulo + "$H_{(v)}$")
+    plt.plot(x_graf, hl, "-" + marcador, label=titulo + " $H_{(l)}$")
+    plt.plot(x_graf, hv, "-" + marcador, label=titulo + " $H_{(v)}$")
 
     # Se muestra la grafica
     plt.legend()
@@ -1670,7 +1670,7 @@ def redlich_kwong_entalpia_reducida(y, p, t):
 
   rt = global_r_j_molk * t
 
-  return rt * (z - 1 - 3 * a * a / (2 * b) * np.log(1 + b * p_psia / z))
+  return rt *  (z - 1 - 3 * a * a / (2 * b) * np.log(1 + b * p_psia / z))
 
 
 def entalpia_ideal_liquido(x, t):
@@ -1865,7 +1865,7 @@ def main():
 
 
   # Se inicalizan los puntos en x utilizados para graficar
-  x_graf = np.linspace(0, 1, 64)
+  x_graf = np.linspace(0, 1, 128)
 
 
   # Raoult
