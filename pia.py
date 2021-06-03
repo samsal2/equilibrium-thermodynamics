@@ -1161,7 +1161,7 @@ def calcular_wilson_a12_a21_raoult_mod(t):
   raise RuntimeError("no se llego a un resultado")
 
 
-def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=None):
+def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=None, marcador = ""):
   """
   Funcion para mostrar los calculados (faltan energias)
 
@@ -1234,8 +1234,8 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
     plt.title(titulo)
 
     # Se grafica
-    plt.plot(x_graf, hl, label="$H_{(l)}$")
-    plt.plot(x_graf, hv, label="$H_{(v)}$")
+    plt.plot(x_graf, hl, "-", label="$H_{(l)}$")
+    plt.plot(x_graf, hv, "-", label="$H_{(v)}$")
 
     # Se muestra la grafica
     plt.legend()
@@ -1245,11 +1245,20 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
     # Se cambia la cuenta de figuras
     global_cuenta_de_figuras += 1
 
+    plt.figure(global_numero_figura_general + 1)
+    plt.plot(x_graf, hl, "-" + marcador, label=titulo+ " $H_{(l)}$")
+    plt.plot(x_graf, hv, "-" + marcador, label=titulo + "$H_{(v)}$")
+
+    # Se muestra la grafica
+    plt.legend()
+    plt.xlabel("$x_1$")
+    plt.ylabel("$H (J / mol)$")
+
 
   plt.figure(global_numero_figura_general)
   plt.title("Comparación de todos los modelos")
-  plt.plot(x_graf, p_graf, ":", label=f"punto de burbuja {titulo}")
-  plt.plot(y_graf, p_graf, "--", label=f"punto de rocio {titulo}")
+  plt.plot(x_graf, p_graf, "-" + marcador, label=f"punto de burbuja {titulo}")
+  plt.plot(y_graf, p_graf, "-" + marcador, label=f"punto de rocio {titulo}")
 
   # Al eje x se le nombra x1-y1
   plt.xlabel("$x_1,y_1$")
@@ -1856,7 +1865,7 @@ def main():
 
 
   # Se inicalizan los puntos en x utilizados para graficar
-  x_graf = np.linspace(0, 1, 128)
+  x_graf = np.linspace(0, 1, 64)
 
 
   # Raoult
@@ -1906,7 +1915,8 @@ def main():
                 p_graf,
                 "Raoult",
                 hl_graf,
-                hv_graf)
+                hv_graf,
+                "x")
 
 
 
@@ -1972,7 +1982,8 @@ def main():
                 p_graf,
                 "Raoult Modificada",
                 hl_graf,
-                hv_graf)
+                hv_graf,
+                "1")
 
   # Gamma-Phi
 
