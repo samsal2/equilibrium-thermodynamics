@@ -1235,11 +1235,11 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
 
     # Se grafica
     plt.plot(x_graf, hl, "-", label="$H_{(l)}$")
-    plt.plot(x_graf, hv, "-", label="$H_{(v)}$")
+    plt.plot(y_graf, hv, "-", label="$H_{(v)}$")
 
     # Se muestra la grafica
     plt.legend()
-    plt.xlabel("$x_1$")
+    plt.xlabel("$x_1, y_1$")
     plt.ylabel("$H (J / mol)$")
 
     # Se cambia la cuenta de figuras
@@ -1247,11 +1247,11 @@ def mostrar_datos(y_calc, p_calc, x_graf, y_graf, p_graf, titulo, hl=None, hv=No
 
     plt.figure(global_numero_figura_general + 1)
     plt.plot(x_graf, hl, "-" + marcador, label=titulo + " $H_{(l)}$")
-    plt.plot(x_graf, hv, "-" + marcador, label=titulo + " $H_{(v)}$")
+    plt.plot(y_graf, hv, "-" + marcador, label=titulo + " $H_{(v)}$")
 
     # Se muestra la grafica
     plt.legend()
-    plt.xlabel("$x_1$")
+    plt.xlabel("$x_1, y_1$")
     plt.ylabel("$H (J / mol)$")
 
 
